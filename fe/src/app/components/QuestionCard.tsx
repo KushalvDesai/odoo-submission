@@ -7,15 +7,38 @@ type QuestionCardProps = {
   tags: string[];
   user: string;
   answers: number;
+  upvotes?: number;
+  createdAt?: Date;
   onTagClick?: (tag: string) => void;
 };
 
-const QuestionCard: React.FC<QuestionCardProps> = ({ title, description, tags, user, answers, onTagClick }) => {
+const QuestionCard: React.FC<QuestionCardProps> = ({ 
+  title, 
+  description, 
+  tags, 
+  user, 
+  answers, 
+  upvotes = 0,
+  createdAt,
+  onTagClick 
+}) => {
+  const formatDate = (date?: Date) => {
+    if (!date) return '';
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const days = Math.floor(hours / 24);
+    
+    if (days > 0) return `${days}d ago`;
+    if (hours > 0) return `${hours}h ago`;
+    return 'Just now';
+  };
+
   return (
     <div className="bg-[#313338] text-white rounded-xl p-5 mb-4 shadow flex flex-col gap-2 relative font-sans transition hover:shadow-lg hover:bg-[#36393f]">
-      <div className="text-lg font-semibold mb-1">{title}</div>
+      <div className="text-lg font-semibold mb-1 line-clamp-2">{title}</div>
       <div className="text-sm text-[#b5bac1] mb-2 line-clamp-2">{description}</div>
-      <div className="flex flex-wrap gap-2 mb-1">
+      <div className="flex flex-wrap gap-2 mb-2">
         {tags.map((tag, idx) => (
           <button
             key={idx}
@@ -27,8 +50,22 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ title, description, tags, u
           </button>
         ))}
       </div>
-      <div className="text-xs text-[#b5bac1]">{user}</div>
-      <div className="absolute top-4 right-4 bg-[#40444b] text-white text-xs px-3 py-1 rounded-lg font-bold shadow">{answers} {answers === 1 ? "answer" : "answers"}</div>
+      <div className="flex items-center justify-between text-xs text-[#b5bac1]">
+        <div className="flex items-center gap-4">
+          <span>by {user}</span>
+          {createdAt && <span>{formatDate(createdAt)}</span>}
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="flex items-center gap-1">
+            <span className="material-symbols-outlined text-sm">thumb_up</span>
+            {upvotes}
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="material-symbols-outlined text-sm">question_answer</span>
+            {answers}
+          </span>
+        </div>
+      </div>
     </div>
   );
 };
