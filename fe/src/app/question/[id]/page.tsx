@@ -341,15 +341,15 @@ export default function QuestionDetailPage() {
                       onChange={(value) => setAnswerText(value || "")}
                       height={150}
                       preview="edit"
-                      className="rounded mdeditor-dark-font"
+                      className="rounded"
                     />
                   </div>
                   <button 
                     type="submit" 
-                    className="bg-[#5865f2] text-white py-3 px-6 rounded-lg font-semibold hover:bg-[#4752c4] transition self-end disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={creatingAnswer || !answerText.trim()}
+                    className="bg-[#5865f2] text-white py-3 px-6 rounded-lg font-semibold hover:bg-[#4752c4] transition self-end"
+                    disabled={!answerText.trim()}
                   >
-                    {creatingAnswer ? "Posting Answer..." : "Post Answer"}
+                    Post Answer
                   </button>
                 </form>
               </div>
