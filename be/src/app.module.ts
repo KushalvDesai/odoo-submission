@@ -9,6 +9,7 @@ import { QuestionsModule } from './questions/questions.module';
 import { UsersModule } from './users/users.module';
 import { AnswersModule } from './answers/answers.module';
 import { VotesModule } from './votes/votes.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { VotesModule } from './votes/votes.module';
     UsersModule,
     AnswersModule,
     VotesModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
