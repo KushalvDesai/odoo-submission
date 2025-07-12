@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { QuestionsService } from './questions.service';
 import { QuestionsResolver } from './questions.resolver';
 import { Question, QuestionSchema } from './schemas/question.schema';
+import { TagsModule } from '../tags/tags.module';
 import { UsersModule } from '../users/users.module';
 
 @Module({
@@ -10,6 +11,7 @@ import { UsersModule } from '../users/users.module';
     MongooseModule.forFeature([
       { name: Question.name, schema: QuestionSchema },
     ]),
+    TagsModule,
     UsersModule,
   ],
   providers: [QuestionsService, QuestionsResolver],
