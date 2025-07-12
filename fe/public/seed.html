@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Seed Database</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #1a202c;
+            color: white;
+        }
+        button {
+            background-color: #3182ce;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #2c5282;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #2d3748;
+        }
+    </style>
+</head>
+<body>
+    <h1>Database Seeder</h1>
+    <p>Click the button below to populate the database with sample data:</p>
+    
+    <button onclick="seedDatabase()">Seed Database</button>
+    
+    <div id="result" class="result" style="display: none;"></div>
+
+    <script>
+        async function seedDatabase() {
+            const button = document.querySelector('button');
+            const result = document.getElementById('result');
+            
+            button.disabled = true;
+            button.textContent = 'Seeding...';
+            
+            try {
+                const response = await fetch('/api/seed-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                result.style.display = 'block';
+                if (response.ok) {
+                    result.style.backgroundColor = '#22543d';
+                    result.innerHTML = '<h3>Success!</h3><p>' + data.message + '</p><pre>' + JSON.stringify(data.data, null, 2) + '</pre>';
+                } else {
+                    result.style.backgroundColor = '#742a2a';
+                    result.innerHTML = '<h3>Error!</h3><p>' + data.message + '</p>';
+                }
+            } catch (error) {
+                result.style.display = 'block';
+                result.style.backgroundColor = '#742a2a';
+                result.innerHTML = '<h3>Error!</h3><p>' + error.message + '</p>';
+            }
+            
+            button.disabled = false;
+            button.textContent = 'Seed Database';
+        }
+    </script>
+</body>
+</html>
