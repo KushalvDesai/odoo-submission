@@ -6,6 +6,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { QuestionsModule } from './questions/questions.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { QuestionsModule } from './questions/questions.module';
       playground: true,
     }),
     QuestionsModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
