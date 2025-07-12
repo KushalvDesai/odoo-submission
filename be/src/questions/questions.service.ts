@@ -1,16 +1,18 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Question, QuestionDocument } from './schemas/question.schema';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
 import { TagsService } from '../tags/tags.service';
+import { AnswersService } from '../answers/answers.service';
 
 @Injectable()
 export class QuestionsService {
   constructor(
     @InjectModel(Question.name) private questionModel: Model<QuestionDocument>,
     private tagsService: TagsService,
+    @Inject(forwardRef(() => AnswersService)) private answersService: AnswersService,
   ) {}
 
   async create(createQuestionDto: CreateQuestionDto): Promise<Question> {
@@ -77,6 +79,9 @@ export class QuestionsService {
     if (question.tags && question.tags.length > 0) {
       await this.tagsService.decrementUsageCount(question.tags);
     }
+
+    // Delete all answers for this question
+    await this.answersService.deleteByQuestionId(id);
 
     await this.questionModel.findByIdAndDelete(id).exec();
   }

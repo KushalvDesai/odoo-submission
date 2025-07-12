@@ -95,4 +95,8 @@ export class AnswersService {
       throw new NotFoundException(`Answer with ID ${id} not found`);
     }
   }
+
+  async deleteByQuestionId(questionId: string): Promise<void> {
+    await this.answerModel.deleteMany({ questionId: new Types.ObjectId(questionId) }).exec();
+  }
 } 

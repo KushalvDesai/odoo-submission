@@ -24,20 +24,25 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen w-screen bg-[#23272a] flex flex-col">
+    <div className="min-h-screen bg-background-primary">
       <Header />
-      <TopBar filter={filter} setFilter={setFilter} search={search} setSearch={setSearch} />
-      <div className="flex-1 flex flex-col items-center overflow-y-auto px-2 sm:px-0">
-        <div className="w-full max-w-4xl px-4 py-6">
-          <QuestionList 
-            filter={filter} 
-            search={search} 
-            selectedTags={selectedTags} 
-            onTagClick={handleTagClick}
-            onClearTags={clearAllTags}
-          />
+      <TopBar filter={filter} setFilter={setFilter} search={search} setSearch={search} />
+      
+      <main className="flex-1 flex flex-col items-center overflow-y-auto">
+        <div className="w-full max-w-6xl px-4 py-8">
+          
+          {/* Questions Section */}
+          <div className="animate-slide-in">
+            <QuestionList 
+              filter={filter} 
+              search={search} 
+              selectedTags={selectedTags} 
+              onTagClick={handleTagClick}
+              onClearTags={clearAllTags}
+            />
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

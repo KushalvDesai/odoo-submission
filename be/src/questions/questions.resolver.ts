@@ -45,12 +45,12 @@ export class QuestionsResolver {
     return this.questionsService.update(id, updateQuestionDto);
   }
 
-  @Mutation(() => Question)
+  @Mutation(() => Boolean)
   @UseGuards(JwtAuthGuard)
   removeQuestion(
     @Args('id', { type: () => String }) id: string,
     @CurrentUser() user: User,
   ) {
-    return this.questionsService.remove(id);
+    return this.questionsService.remove(id).then(() => true);
   }
 } 
