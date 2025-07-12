@@ -1,9 +1,11 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useQuery, useApolloClient } from "@apollo/client";
-import { GET_QUESTIONS, GET_ANSWERS_BY_QUESTION, GET_VOTE_STATS } from "../lib/graphql-queries";
+import { useQuery, useApolloClient, useMutation } from "@apollo/client";
+import { GET_QUESTIONS, GET_ANSWERS_BY_QUESTION, GET_VOTE_STATS, UPDATE_QUESTION, REMOVE_QUESTION } from "../lib/graphql-queries";
 import QuestionCard from "./QuestionCard";
 import { Filter, X, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { useRouter } from "next/navigation";
 
 type Question = {
   id: string;
@@ -65,6 +67,16 @@ export default function QuestionList({ filter, search, selectedTags = [], onTagC
   const { data, loading, error } = useQuery(GET_QUESTIONS);
   const client = useApolloClient();
   const [questionStats, setQuestionStats] = useState<Record<string, { answers: number; upvotes: number; downvotes: number }>>({});
+  const { user: currentUser } = useAuth();
+  const router = useRouter();
+
+  // Edit and delete mutations
+  const [updateQuestion] = useMutation(UPDATE_QUESTION, {
+    refetchQueries: [{ query: GET_QUESTIONS }],
+  });
+  const [removeQuestion] = useMutation(REMOVE_QUESTION, {
+    refetchQueries: [{ query: GET_QUESTIONS }],
+  });
 
   useEffect(() => {
     async function fetchStats() {
@@ -103,6 +115,24 @@ export default function QuestionList({ filter, search, selectedTags = [], onTagC
   useEffect(() => {
     setPage(1);
   }, [filter, search, selectedTags]);
+
+  // Handle question edit
+  const handleEditQuestion = (questionId: string) => {
+    // Navigate to edit page or open edit modal
+    router.push(`/question/${questionId}/edit`);
+  };
+
+  // Handle question delete
+  const handleDeleteQuestion = async (questionId: string) => {
+    if (confirm('Are you sure you want to delete this question? This action cannot be undone.')) {
+      try {
+        await removeQuestion({ variables: { id: questionId } });
+      } catch (error: any) {
+        console.error("Error deleting question:", error);
+        alert('Failed to delete question. Please try again.');
+      }
+    }
+  };
 
   if (loading) {
     return (
@@ -189,6 +219,9 @@ export default function QuestionList({ filter, search, selectedTags = [], onTagC
                 downvotes={stats.downvotes}
                 createdAt={new Date(question.createdAt)}
                 onTagClick={onTagClick}
+                currentUser={currentUser}
+                onEdit={() => handleEditQuestion(question.id)}
+                onDelete={() => handleDeleteQuestion(question.id)}
               />
             </div>
           );

@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation } from "@apollo/client";
-import { GET_QUESTION, GET_ANSWERS_BY_QUESTION, CREATE_ANSWER, GET_VOTE_STATS, CREATE_VOTE } from "../../../lib/graphql-queries";
+import { GET_QUESTION, GET_ANSWERS_BY_QUESTION, CREATE_ANSWER, GET_VOTE_STATS, CREATE_VOTE, UPDATE_ANSWER, REMOVE_ANSWER } from "../../../lib/graphql-queries";
 import { useNotification } from "../../../contexts/NotificationContext";
 import { useAuth } from "../../../contexts/AuthContext";
 import { parseMentions, validateMentions } from "../../../utils/mentions";
@@ -52,8 +52,12 @@ export default function QuestionDetailPage() {
   const [upvoted, setUpvoted] = useState<{ [key: string]: boolean }>({});
   const [downvoted, setDownvoted] = useState<{ [key: string]: boolean }>({});
   const [voteStatsRefetch, setVoteStatsRefetch] = useState<{ [key: string]: () => void }>({});
-  const { createAnswerNotification, createMentionNotification } = useNotification();
-  const { user } = useAuth();
+  const [acceptedAnswerId, setAcceptedAnswerId] = useState<string | null>(null);
+  // State for editing answers
+  const [editingAnswerId, setEditingAnswerId] = useState<string | null>(null);
+  const [editingAnswerText, setEditingAnswerText] = useState("");
+  // Notifications are now backend-driven; remove createAnswerNotification, createMentionNotification
+  const { user: currentUser } = useAuth();
   const router = useRouter();
   const params = useParams();
   const questionId = params?.id as string;
@@ -78,6 +82,14 @@ export default function QuestionDetailPage() {
   // Vote mutation
   const [createVote, { loading: voting }] = useMutation(CREATE_VOTE);
 
+  // Edit and delete answer mutations
+  const [updateAnswer, { loading: updatingAnswer }] = useMutation(UPDATE_ANSWER, {
+    refetchQueries: [{ query: GET_ANSWERS_BY_QUESTION, variables: { questionId } }],
+  });
+  const [removeAnswer, { loading: deletingAnswer }] = useMutation(REMOVE_ANSWER, {
+    refetchQueries: [{ query: GET_ANSWERS_BY_QUESTION, variables: { questionId } }],
+  });
+
   const question = questionData?.question;
   const answers = answersData?.answersByQuestion || [];
 
@@ -93,8 +105,54 @@ export default function QuestionDetailPage() {
     return 'Just now';
   };
 
+  // Handle starting to edit an answer
+  const handleStartEdit = (answer: any) => {
+    setEditingAnswerId(answer.id);
+    setEditingAnswerText(answer.content);
+  };
+
+  // Handle canceling edit
+  const handleCancelEdit = () => {
+    setEditingAnswerId(null);
+    setEditingAnswerText("");
+  };
+
+  // Handle saving edited answer
+  const handleSaveEdit = async (answerId: string) => {
+    if (!editingAnswerText.trim()) return;
+    
+    try {
+      await updateAnswer({
+        variables: {
+          id: answerId,
+          updateAnswerInput: {
+            content: editingAnswerText.trim()
+          }
+        }
+      });
+      
+      setEditingAnswerId(null);
+      setEditingAnswerText("");
+    } catch (error: any) {
+      console.error("Error updating answer:", error);
+      alert("Failed to update answer. Please try again.");
+    }
+  };
+
+  // Handle deleting an answer
+  const handleDeleteAnswer = async (answerId: string) => {
+    if (confirm('Are you sure you want to delete this answer?')) {
+      try {
+        await removeAnswer({ variables: { id: answerId } });
+      } catch (error: any) {
+        console.error("Error deleting answer:", error);
+        alert('Failed to delete answer. Please try again.');
+      }
+    }
+  };
+
   const handleUpvote = async (answerId: string) => {
-    if (!user) return;
+    if (!currentUser) return;
     
     try {
       await createVote({
@@ -124,7 +182,7 @@ export default function QuestionDetailPage() {
   };
 
   const handleDownvote = async (answerId: string) => {
-    if (!user) return;
+    if (!currentUser) return;
     
     try {
       await createVote({
@@ -155,7 +213,7 @@ export default function QuestionDetailPage() {
 
   const handleAnswer = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!answerText || !user) return;
+    if (!answerText || !currentUser) return;
     
     try {
       const { data } = await createAnswer({
@@ -168,11 +226,11 @@ export default function QuestionDetailPage() {
       });
 
       if (data?.createAnswer) {
-        const answererName = user.email.split("@")[0];
+        const answererName = currentUser.email.split("@")[0];
         
         // Create notification for question owner (if not the same user)
         if (question?.author !== answererName) {
-          createAnswerNotification(question?.title || "Question", answererName, questionId);
+          // createAnswerNotification(question?.title || "Question", answererName, questionId);
         }
         
         // Parse and create notifications for mentions
@@ -181,7 +239,7 @@ export default function QuestionDetailPage() {
         
         validMentions.forEach(mentionedUser => {
           if (mentionedUser.toLowerCase() !== answererName.toLowerCase()) {
-            createMentionNotification(mentionedUser, answererName, questionId);
+            // createMentionNotification(mentionedUser, answererName, questionId);
           }
         });
         
@@ -293,8 +351,8 @@ export default function QuestionDetailPage() {
                               : "bg-background-tertiary text-foreground-tertiary hover:bg-accent-primary hover:text-white"
                           }`}
                           onClick={() => handleUpvote(answer.id)}
-                          disabled={!user || voting}
-                          title={!user ? "Login to upvote" : upvoted[answer.id] ? "Already upvoted" : "Upvote"}
+                          disabled={!currentUser || voting}
+                          title={!currentUser ? "Login to upvote" : upvoted[answer.id] ? "Already upvoted" : "Upvote"}
                         >
                           <ArrowUp className="w-5 h-5" />
                         </button>
@@ -312,15 +370,87 @@ export default function QuestionDetailPage() {
                               : "bg-background-tertiary text-foreground-tertiary hover:bg-accent-primary hover:text-white"
                           }`}
                           onClick={() => handleDownvote(answer.id)}
-                          disabled={!user || voting}
-                          title={!user ? "Login to downvote" : downvoted[answer.id] ? "Already downvoted" : "Downvote"}
+                          disabled={!currentUser || voting}
+                          title={!currentUser ? "Login to downvote" : downvoted[answer.id] ? "Already downvoted" : "Downvote"}
                         >
                           <ArrowDown className="w-5 h-5" />
                         </button>
                       </div>
                       {/* Answer Content */}
                       <div className="flex-1">
-                        <div className="text-foreground-primary mb-4 leading-relaxed whitespace-pre-wrap">{answer.content}</div>
+                        {editingAnswerId === answer.id ? (
+                          <div className="mb-4">
+                            <div data-color-mode="dark">
+                              <MDEditor
+                                value={editingAnswerText}
+                                onChange={(value) => setEditingAnswerText(value || "")}
+                                height={200}
+                                preview="edit"
+                                className="rounded-lg"
+                              />
+                            </div>
+                            {/* Edit buttons */}
+                            <div className="flex gap-2 mt-4">
+                              <button
+                                className="btn btn-xs btn-success"
+                                onClick={() => handleSaveEdit(answer.id)}
+                                disabled={updatingAnswer}
+                              >
+                                {updatingAnswer ? "Saving..." : "Save"}
+                              </button>
+                              <button
+                                className="btn btn-xs btn-error"
+                                onClick={handleCancelEdit}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-foreground-primary mb-4 leading-relaxed whitespace-pre-wrap">
+                            {answer.content}
+                          </div>
+                        )}
+                        
+                        {/* Accepted badge or mark button */}
+                        {question && currentUser && (currentUser.name === question.author || currentUser.email === question.author) && (
+                          acceptedAnswerId === answer.id ? (
+                            <div className="flex items-center space-x-1 badge badge-success mb-4">
+                              <CheckCircle className="w-4 h-4" />
+                              <span>accepted</span>
+                            </div>
+                          ) : (
+                            <button
+                              className="mb-4 p-1 rounded-full bg-background-tertiary hover:bg-success/20 transition-colors"
+                              title="Mark as accepted"
+                              onClick={e => { e.stopPropagation(); setAcceptedAnswerId(answer.id); }}
+                            >
+                              <CheckCircle className="w-4 h-4 text-foreground-tertiary hover:text-success" />
+                            </button>
+                          )
+                        )}
+                        
+                        {/* Edit/Delete menu for answer owner */}
+                        {currentUser && currentUser.name === answer.author && editingAnswerId !== answer.id && (
+                          <div className="flex gap-2 mb-4">
+                            <button
+                              className="btn btn-xs btn-secondary"
+                              title="Edit Answer"
+                              onClick={() => handleStartEdit(answer)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="btn btn-xs btn-error"
+                              title="Delete Answer"
+                              onClick={() => handleDeleteAnswer(answer.id)}
+                              disabled={deletingAnswer}
+                            >
+                              {deletingAnswer ? "Deleting..." : "Delete"}
+                            </button>
+                          </div>
+                        )}
+                        
                         <div className="flex items-center justify-between text-sm text-foreground-tertiary">
                           <div className="flex items-center gap-4">
                             <div className="flex items-center space-x-1">
@@ -341,7 +471,7 @@ export default function QuestionDetailPage() {
             </div>
 
             {/* Answer Form */}
-            {user ? (
+            {currentUser ? (
               <div className="card">
                 <h3 className="text-xl font-semibold text-foreground-primary mb-6">Your Answer</h3>
                 <form onSubmit={handleAnswer} className="space-y-6">

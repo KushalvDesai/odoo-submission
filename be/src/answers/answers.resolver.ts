@@ -49,12 +49,12 @@ export class AnswersResolver {
     return this.answersService.update(id, updateAnswerDto);
   }
 
-  @Mutation(() => Answer)
+  @Mutation(() => Boolean)
   @UseGuards(JwtAuthGuard)
   removeAnswer(
     @Args('id', { type: () => String }) id: string,
     @CurrentUser() user: User,
   ) {
-    return this.answersService.remove(id);
+    return this.answersService.remove(id).then(() => true);
   }
 } 

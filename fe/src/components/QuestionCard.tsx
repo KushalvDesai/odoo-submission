@@ -1,7 +1,8 @@
 "use client";
 import React from "react";
 import { useRouter } from "next/navigation";
-import { MessageSquare, ThumbsUp, ThumbsDown, Clock, User } from 'lucide-react';
+import { MessageSquare, ThumbsUp, ThumbsDown, Clock, User, MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 type QuestionCardProps = {
   id: string;
@@ -14,6 +15,9 @@ type QuestionCardProps = {
   downvotes?: number;
   createdAt?: Date;
   onTagClick?: (tag: string) => void;
+  currentUser?: { name: string; email: string } | null;
+  onEdit?: () => void;
+  onDelete?: () => void;
 };
 
 const QuestionCard: React.FC<QuestionCardProps> = ({ 
@@ -26,9 +30,27 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   upvotes = 0,
   downvotes = 0,
   createdAt,
-  onTagClick 
+  onTagClick,
+  currentUser,
+  onEdit,
+  onDelete
 }) => {
   const router = useRouter();
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  const menuRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!menuOpen) return;
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [menuOpen]);
+
+  const isOwner = currentUser && (currentUser.name === user || currentUser.email === user);
 
   const formatDate = (date?: Date) => {
     if (!date) return '';
@@ -55,7 +77,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
 
   return (
     <div 
-      className="card hover-lift animate-fade-in cursor-pointer group"
+      className="card hover-lift animate-fade-in cursor-pointer group relative"
       onClick={handleCardClick}
     >
       {/* Header */}
@@ -68,6 +90,33 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             <Clock className="w-3 h-3" />
             <span>{formatDate(createdAt)}</span>
           </div>
+          {isOwner && (
+            <div className="relative" ref={menuRef} onClick={e => e.stopPropagation()}>
+              <button
+                className="p-1 rounded-full hover:bg-background-tertiary transition-colors"
+                onClick={() => setMenuOpen(v => !v)}
+                aria-label="More options"
+              >
+                <MoreVertical className="w-5 h-5 text-foreground-tertiary" />
+              </button>
+              {menuOpen && (
+                <div className="absolute right-0 mt-2 w-32 card z-50 animate-scale-in">
+                  <button
+                    className="flex items-center w-full px-3 py-2 text-sm hover:bg-background-tertiary text-foreground-primary"
+                    onClick={e => { e.stopPropagation(); setMenuOpen(false); onEdit && onEdit(); }}
+                  >
+                    <Edit className="w-4 h-4 mr-2" /> Edit
+                  </button>
+                  <button
+                    className="flex items-center w-full px-3 py-2 text-sm hover:bg-background-tertiary text-error"
+                    onClick={e => { e.stopPropagation(); setMenuOpen(false); onDelete && onDelete(); }}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" /> Delete
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

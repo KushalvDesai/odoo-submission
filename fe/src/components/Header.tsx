@@ -4,6 +4,7 @@ import { useNotification } from "../contexts/NotificationContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { Bell, User, LogOut, Settings, Plus, MessageSquare } from 'lucide-react';
+import NotificationDropdown from './NotificationDropdown';
 
 const BellIcon = ({ hasUnread, onClick }: { hasUnread: boolean; onClick: () => void }) => (
   <button 
@@ -31,58 +32,6 @@ const NotificationIcon = ({ type }: { type?: string }) => {
   }
 };
 
-const NotificationDropdown = ({ open }: { open: boolean }) => {
-  const { notifications } = useNotification();
-  const router = useRouter();
-  
-  if (!open) return null;
-  
-  const handleNotificationClick = (link?: string) => {
-    if (link) {
-      router.push(link);
-    }
-  };
-  
-  return (
-    <div className="absolute right-0 mt-2 w-80 card z-50 animate-scale-in">
-      <div className="flex items-center justify-between p-4 border-b border-border-primary">
-        <span className="font-semibold text-foreground-primary">Notifications</span>
-        <span className="text-xs text-foreground-tertiary">{notifications.length} total</span>
-      </div>
-      <ul className="max-h-80 overflow-y-auto">
-        {notifications.length === 0 && (
-          <li className="p-4 text-foreground-tertiary text-sm text-center">No notifications</li>
-        )}
-        {notifications.slice(0, 10).map(n => (
-          <li 
-            key={n.id} 
-            className={`px-4 py-3 border-b border-border-primary cursor-pointer hover:bg-background-tertiary transition-colors ${
-              n.isRead ? "bg-transparent" : "bg-accent-tertiary"
-            }`}
-            onClick={() => handleNotificationClick(n.link)}
-          >
-            <div className="flex items-start">
-              <NotificationIcon type={n.type} />
-              <div className="flex-1">
-                <div className="text-foreground-primary text-sm leading-relaxed">{n.message}</div>
-                <div className="text-xs text-foreground-tertiary mt-1">
-                  {n.createdAt.toLocaleString()}
-                  {!n.isRead && <span className="ml-2 text-error">• New</span>}
-                </div>
-              </div>
-            </div>
-          </li>
-        ))}
-        {notifications.length > 10 && (
-          <li className="p-3 text-center">
-            <span className="text-xs text-foreground-tertiary">+{notifications.length - 10} more notifications</span>
-          </li>
-        )}
-      </ul>
-    </div>
-  );
-};
-
 const ProfileDropdown = ({ onLogout }: { onLogout: () => void }) => {
   return (
     <div className="absolute right-0 mt-2 w-48 card z-50 animate-scale-in">
@@ -103,12 +52,10 @@ const Header = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const router = useRouter();
+  const bellRef = React.useRef<HTMLButtonElement>(null);
 
   const handleBellClick = () => {
-    setDropdownOpen(open => {
-      if (!open) markAllRead();
-      return !open;
-    });
+    setDropdownOpen(open => !open);
   };
 
   const handleProfileClick = () => setProfileOpen(open => !open);
@@ -142,7 +89,12 @@ const Header = () => {
           </>
         ) : (
           <>
-            <BellIcon hasUnread={unreadCount > 0} onClick={handleBellClick} />
+            <button ref={bellRef} onClick={handleBellClick} className="relative p-2 rounded-full bg-background-secondary border border-border-primary hover:border-border-secondary transition-all duration-300 hover-lift hover-glow group">
+              <Bell className="w-5 h-5 text-foreground-secondary group-hover:text-foreground-primary transition-colors" />
+              {/* Notification badge */}
+              {unreadCount > 0 && <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-error animate-pulse"></span>}
+            </button>
+            <NotificationDropdown open={dropdownOpen} anchorRef={bellRef} onClose={() => setDropdownOpen(false)} />
             <div className="relative">
               <button 
                 onClick={handleProfileClick} 
@@ -159,9 +111,6 @@ const Header = () => {
             </div>
           </>
         )}
-        <div className="relative">
-          <NotificationDropdown open={dropdownOpen} />
-        </div>
       </div>
     </header>
   );
