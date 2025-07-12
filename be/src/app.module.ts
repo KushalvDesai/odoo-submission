@@ -8,6 +8,7 @@ import { AppService } from './app.service';
 import { QuestionsModule } from './questions/questions.module';
 import { UsersModule } from './users/users.module';
 import { AnswersModule } from './answers/answers.module';
+import { VotesModule } from './votes/votes.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { AnswersModule } from './answers/answers.module';
     QuestionsModule,
     UsersModule,
     AnswersModule,
+    VotesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
