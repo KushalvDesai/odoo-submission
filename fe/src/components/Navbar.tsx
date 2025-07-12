@@ -25,15 +25,6 @@ const Navbar = () => {
               >
                 Questions
               </Link>
-              {user && (
-                <Link 
-                  href="/ask" 
-                  className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1"
-                >
-                  <Plus className="w-4 h-4" />
-                  Ask Question
-                </Link>
-              )}
             </div>
           </div>
 

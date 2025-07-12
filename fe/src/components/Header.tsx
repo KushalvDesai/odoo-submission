@@ -106,15 +106,6 @@ const Header = () => {
     <header className="w-full flex items-center justify-between bg-[#2b2d31] text-white px-4 sm:px-8 py-4 shadow-md border-b border-[#23272a] font-sans relative">
       <div className="flex items-center gap-4">
         <button onClick={() => router.push("/")} className="text-2xl font-bold tracking-wide hover:underline">StackIt</button>
-        {user && (
-          <button 
-            onClick={() => router.push("/ask")} 
-            className="hidden sm:flex items-center gap-2 bg-[#5865f2] px-4 py-2 rounded-lg hover:bg-[#4752c4] transition-colors"
-          >
-            <span className="material-symbols-outlined text-sm">add</span>
-            Ask Question
-          </button>
-        )}
       </div>
       <div className="flex items-center relative">
         {!user ? (
