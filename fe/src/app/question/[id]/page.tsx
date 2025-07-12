@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useNotification } from "../../components/NotificationContext";
 import { useAuth } from "../../components/AuthContext";
 import { parseMentions, validateMentions } from "../../utils/mentions";
+import Header from "../../components/Header";
 import dynamic from "next/dynamic";
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
@@ -104,124 +105,127 @@ export default function QuestionDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#23272a] py-8 px-2">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-[#313338] p-4 sm:p-8 rounded-xl shadow-lg">
-          {/* Breadcrumbs */}
-          <div className="text-xs text-[#b5bac1] mb-4 flex items-center gap-2">
-            <button onClick={() => router.push("/")} className="hover:underline">Home</button>
-            <span className="mx-1">/</span>
-            <span className="truncate max-w-[200px] sm:max-w-xs">{mockQuestion.title.slice(0, 40)}{mockQuestion.title.length > 40 ? "..." : ""}</span>
-          </div>
-          
-          {/* Question */}
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-white mb-3">{mockQuestion.title}</h1>
-            <div className="text-[#b5bac1] mb-4 leading-relaxed">{mockQuestion.description}</div>
-            <div className="flex gap-2 mb-4 flex-wrap">
-              {mockQuestion.tags.map((tag, idx) => (
-                <span key={idx} className="bg-[#40444b] text-xs px-2 py-1 rounded-md text-[#b5bac1]">{tag}</span>
-              ))}
+    <div className="min-h-screen bg-[#23272a] flex flex-col">
+      <Header />
+      <div className="flex-1 py-8 px-2">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-[#313338] p-4 sm:p-8 rounded-xl shadow-lg">
+            {/* Breadcrumbs */}
+            <div className="text-xs text-[#b5bac1] mb-4 flex items-center gap-2">
+              <button onClick={() => router.push("/")} className="hover:underline">Home</button>
+              <span className="mx-1">/</span>
+              <span className="truncate max-w-[200px] sm:max-w-xs">{mockQuestion.title.slice(0, 40)}{mockQuestion.title.length > 40 ? "..." : ""}</span>
             </div>
-            <div className="flex items-center justify-between text-xs text-[#b5bac1]">
-              <div className="flex items-center gap-4">
-                <span>Asked by {mockQuestion.user}</span>
-                <span>{formatDate(mockQuestion.createdAt)}</span>
+            
+            {/* Question */}
+            <div className="mb-8">
+              <h1 className="text-2xl font-bold text-white mb-3">{mockQuestion.title}</h1>
+              <div className="text-[#b5bac1] mb-4 leading-relaxed">{mockQuestion.description}</div>
+              <div className="flex gap-2 mb-4 flex-wrap">
+                {mockQuestion.tags.map((tag, idx) => (
+                  <span key={idx} className="bg-[#40444b] text-xs px-2 py-1 rounded-md text-[#b5bac1]">{tag}</span>
+                ))}
               </div>
-              <div className="flex items-center gap-1">
-                <span className="material-symbols-outlined text-sm">thumb_up</span>
-                <span>{mockQuestion.upvotes}</span>
+              <div className="flex items-center justify-between text-xs text-[#b5bac1]">
+                <div className="flex items-center gap-4">
+                  <span>Asked by {mockQuestion.user}</span>
+                  <span>{formatDate(mockQuestion.createdAt)}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="material-symbols-outlined text-sm">thumb_up</span>
+                  <span>{mockQuestion.upvotes}</span>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Answers */}
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-white mb-4">Answers ({answers.length})</h2>
-            {answers.length === 0 && (
-              <div className="text-[#b5bac1] text-center py-8 bg-[#40444b] rounded-lg">
-                <div className="text-lg mb-2">No answers yet</div>
-                <div className="text-sm">Be the first to answer this question!</div>
-              </div>
-            )}
-            {answers.map((a, index) => (
-              <div key={a.id} className="bg-[#40444b] rounded-lg p-6 mb-4">
-                <div className="flex gap-4">
-                  {/* Voting */}
-                  <div className="flex flex-col items-center gap-2">
-                    <button
-                      className={`p-2 rounded-lg transition-colors ${
-                        upvoted[a.id] 
-                          ? "bg-[#5865f2] text-white" 
-                          : "bg-[#313338] text-[#b5bac1] hover:bg-[#5865f2] hover:text-white"
-                      }`}
-                      onClick={() => handleUpvote(a.id)}
-                      disabled={!user || !!upvoted[a.id]}
-                      title={!user ? "Login to upvote" : upvoted[a.id] ? "Already upvoted" : "Upvote"}
-                    >
-                      <span className="material-symbols-outlined text-xl">arrow_upward</span>
-                    </button>
-                    <span className="text-white font-semibold text-lg">{a.upvotes}</span>
-                  </div>
-                  
-                  {/* Answer Content */}
-                  <div className="flex-1">
-                    <div className="text-white mb-4 leading-relaxed whitespace-pre-wrap">{a.text}</div>
-                    <div className="flex items-center justify-between text-xs text-[#b5bac1]">
-                      <div className="flex items-center gap-4">
-                        <span>Answered by {a.user}</span>
-                        <span>{formatDate(a.createdAt)}</span>
+            {/* Answers */}
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold text-white mb-4">Answers ({answers.length})</h2>
+              {answers.length === 0 && (
+                <div className="text-[#b5bac1] text-center py-8 bg-[#40444b] rounded-lg">
+                  <div className="text-lg mb-2">No answers yet</div>
+                  <div className="text-sm">Be the first to answer this question!</div>
+                </div>
+              )}
+              {answers.map((a, index) => (
+                <div key={a.id} className="bg-[#40444b] rounded-lg p-6 mb-4">
+                  <div className="flex gap-4">
+                    {/* Voting */}
+                    <div className="flex flex-col items-center gap-2">
+                      <button
+                        className={`p-2 rounded-lg transition-colors ${
+                          upvoted[a.id] 
+                            ? "bg-[#5865f2] text-white" 
+                            : "bg-[#313338] text-[#b5bac1] hover:bg-[#5865f2] hover:text-white"
+                        }`}
+                        onClick={() => handleUpvote(a.id)}
+                        disabled={!user || !!upvoted[a.id]}
+                        title={!user ? "Login to upvote" : upvoted[a.id] ? "Already upvoted" : "Upvote"}
+                      >
+                        <span className="material-symbols-outlined text-xl">arrow_upward</span>
+                      </button>
+                      <span className="text-white font-semibold text-lg">{a.upvotes}</span>
+                    </div>
+                    
+                    {/* Answer Content */}
+                    <div className="flex-1">
+                      <div className="text-white mb-4 leading-relaxed whitespace-pre-wrap">{a.text}</div>
+                      <div className="flex items-center justify-between text-xs text-[#b5bac1]">
+                        <div className="flex items-center gap-4">
+                          <span>Answered by {a.user}</span>
+                          <span>{formatDate(a.createdAt)}</span>
+                        </div>
+                        {index === 0 && a.upvotes > 3 && (
+                          <span className="bg-[#57f287] text-black px-2 py-1 rounded text-xs font-semibold">
+                            ✓ Accepted
+                          </span>
+                        )}
                       </div>
-                      {index === 0 && a.upvotes > 3 && (
-                        <span className="bg-[#57f287] text-black px-2 py-1 rounded text-xs font-semibold">
-                          ✓ Accepted
-                        </span>
-                      )}
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
 
-          {/* Answer Form */}
-          {user ? (
-            <div className="bg-[#40444b] rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Your Answer</h3>
-              <form onSubmit={handleAnswer} className="flex flex-col gap-4">
-                <div className="text-sm text-[#b5bac1] p-3 bg-[#313338] rounded-lg">
-                  <strong>Tip:</strong> Use @username to mention other users (e.g., @alice, @bob). You can also use markdown formatting.
-                </div>
-                <div data-color-mode="dark">
-                  <MDEditor
-                    value={answerText}
-                    onChange={(value) => setAnswerText(value || "")}
-                    height={150}
-                    preview="edit"
-                    className="rounded"
-                  />
-                </div>
+            {/* Answer Form */}
+            {user ? (
+              <div className="bg-[#40444b] rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-white mb-4">Your Answer</h3>
+                <form onSubmit={handleAnswer} className="flex flex-col gap-4">
+                  <div className="text-sm text-[#b5bac1] p-3 bg-[#313338] rounded-lg">
+                    <strong>Tip:</strong> Use @username to mention other users (e.g., @alice, @bob). You can also use markdown formatting.
+                  </div>
+                  <div data-color-mode="dark">
+                    <MDEditor
+                      value={answerText}
+                      onChange={(value) => setAnswerText(value || "")}
+                      height={150}
+                      preview="edit"
+                      className="rounded"
+                    />
+                  </div>
+                  <button 
+                    type="submit" 
+                    className="bg-[#5865f2] text-white py-3 px-6 rounded-lg font-semibold hover:bg-[#4752c4] transition self-end"
+                    disabled={!answerText.trim()}
+                  >
+                    Post Answer
+                  </button>
+                </form>
+              </div>
+            ) : (
+              <div className="text-[#b5bac1] text-center py-8 bg-[#40444b] rounded-lg">
+                <div className="text-lg mb-2">Want to answer this question?</div>
+                <div className="text-sm mb-4">Please login to submit an answer or upvote.</div>
                 <button 
-                  type="submit" 
-                  className="bg-[#5865f2] text-white py-3 px-6 rounded-lg font-semibold hover:bg-[#4752c4] transition self-end"
-                  disabled={!answerText.trim()}
+                  className="bg-[#5865f2] text-white py-2 px-4 rounded font-semibold hover:bg-[#4752c4] transition"
+                  onClick={() => router.push("/login")}
                 >
-                  Post Answer
+                  Login
                 </button>
-              </form>
-            </div>
-          ) : (
-            <div className="text-[#b5bac1] text-center py-8 bg-[#40444b] rounded-lg">
-              <div className="text-lg mb-2">Want to answer this question?</div>
-              <div className="text-sm mb-4">Please login to submit an answer or upvote.</div>
-              <button 
-                className="bg-[#5865f2] text-white py-2 px-4 rounded font-semibold hover:bg-[#4752c4] transition"
-                onClick={() => router.push("/login")}
-              >
-                Login
-              </button>
-            </div>
-          )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
