@@ -15,3 +15,4 @@ import { UsersModule } from '../users/users.module';
   providers: [AnswersService, AnswersResolver],
   exports: [AnswersService],
 })
+export class AnswersModule {}

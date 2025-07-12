@@ -7,7 +7,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { QuestionsModule } from './questions/questions.module';
 import { UsersModule } from './users/users.module';
-import { AnswersModule } from './answers/answers.module';
+import { TagsModule } from './tags/tags.module';
 
 @Module({
   imports: [
@@ -22,7 +22,7 @@ import { AnswersModule } from './answers/answers.module';
     }),
     QuestionsModule,
     UsersModule,
-    AnswersModule,
+    TagsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
