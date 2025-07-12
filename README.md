@@ -165,29 +165,7 @@ The backend exposes a GraphQL API with the following main types:
 
 #### Key Queries & Mutations
 
-```graphql
-# User Authentication
-mutation register($input: RegisterInput!) {
-  register(input: $input) {
-    user { id, email, name }
-    token
-  }
-}
 
-# Question Management
-query getQuestions($limit: Int, $offset: Int) {
-  questions(limit: $limit, offset: $offset) {
-    id, title, desc, tags, author, createdAt
-  }
-}
-
-# Voting System
-mutation vote($answerId: ID!, $voteType: VoteType!) {
-  vote(answerId: $answerId, voteType: $voteType) {
-    id, voteType, createdAt
-  }
-}
-```
 
 ### GraphQL Playground
 
