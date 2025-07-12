@@ -17,9 +17,4 @@ export class UpdateQuestionDto {
   @IsArray()
   @IsOptional()
   tags?: string[];
-
-  @Field({ nullable: true })
-  @IsString()
-  @IsOptional()
-  author?: string;
 } 

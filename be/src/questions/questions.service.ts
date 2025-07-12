@@ -11,7 +11,7 @@ export class QuestionsService {
     @InjectModel(Question.name) private questionModel: Model<QuestionDocument>,
   ) {}
 
-  async create(createQuestionDto: CreateQuestionDto): Promise<Question> {
+  async create(createQuestionDto: CreateQuestionDto & { author: string }): Promise<Question> {
     const createdQuestion = new this.questionModel(createQuestionDto);
     return createdQuestion.save();
   }

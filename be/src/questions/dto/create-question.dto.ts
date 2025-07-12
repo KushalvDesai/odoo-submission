@@ -17,9 +17,4 @@ export class CreateQuestionDto {
   @IsArray()
   @IsOptional()
   tags?: string[];
-
-  @Field()
-  @IsString()
-  @IsNotEmpty()
-  author: string;
 } 
