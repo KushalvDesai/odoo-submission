@@ -1,10 +1,10 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { QuestionsService } from './questions.service';
 import { QuestionsResolver } from './questions.resolver';
 import { Question, QuestionSchema } from './schemas/question.schema';
 import { TagsModule } from '../tags/tags.module';
-import { UsersModule } from '../users/users.module';
+import { AnswersModule } from '../answers/answers.module';
 
 @Module({
   imports: [
@@ -12,7 +12,7 @@ import { UsersModule } from '../users/users.module';
       { name: Question.name, schema: QuestionSchema },
     ]),
     TagsModule,
-    UsersModule,
+    forwardRef(() => AnswersModule),
   ],
   providers: [QuestionsService, QuestionsResolver],
   exports: [QuestionsService],
