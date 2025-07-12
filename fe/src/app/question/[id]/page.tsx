@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation } from "@apollo/client";
-import { GET_QUESTION, GET_ANSWERS_BY_QUESTION, CREATE_ANSWER } from "../../../lib/graphql-queries";
+import { GET_QUESTION, GET_ANSWERS_BY_QUESTION, CREATE_ANSWER, GET_VOTE_STATS, CREATE_VOTE } from "../../../lib/graphql-queries";
 import { useNotification } from "../../../contexts/NotificationContext";
 import { useAuth } from "../../../contexts/AuthContext";
 import { parseMentions, validateMentions } from "../../../utils/mentions";
@@ -10,12 +10,47 @@ import Header from "../../../components/Header";
 import dynamic from "next/dynamic";
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
+import { useQuery as useApolloQuery } from "@apollo/client";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
+
+// Helper component for answer voting stats
+function AnswerVoteStats({ answerId, onRefetch }: { answerId: string; onRefetch?: (refetchFn: () => void) => void }) {
+  const { data, loading, refetch } = useApolloQuery(GET_VOTE_STATS, { 
+    variables: { answerId },
+    fetchPolicy: 'cache-and-network'
+  });
+  
+  // Register refetch function with parent only once
+  const hasRegisteredRef = React.useRef(false);
+  React.useEffect(() => {
+    if (onRefetch && refetch && !hasRegisteredRef.current) {
+      onRefetch(refetch);
+      hasRegisteredRef.current = true;
+    }
+  }, [onRefetch, refetch]);
+  
+  let upvotes = 0, downvotes = 0;
+  if (data?.voteStats) {
+    try {
+      const stats = JSON.parse(data.voteStats);
+      upvotes = stats.upvotes;
+      downvotes = stats.downvotes;
+    } catch {}
+  }
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <span className="text-green-400 font-bold text-sm">▲ {upvotes}</span>
+      <span className="text-red-400 font-bold text-sm">▼ {downvotes}</span>
+    </div>
+  );
+}
 
 export default function QuestionDetailPage() {
   const [answerText, setAnswerText] = useState("");
   const [upvoted, setUpvoted] = useState<{ [key: string]: boolean }>({});
+  const [downvoted, setDownvoted] = useState<{ [key: string]: boolean }>({});
+  const [voteStatsRefetch, setVoteStatsRefetch] = useState<{ [key: string]: () => void }>({});
   const { createAnswerNotification, createMentionNotification } = useNotification();
   const { user } = useAuth();
   const router = useRouter();
@@ -39,6 +74,9 @@ export default function QuestionDetailPage() {
     refetchQueries: [{ query: GET_ANSWERS_BY_QUESTION, variables: { questionId } }],
   });
 
+  // Vote mutation
+  const [createVote, { loading: voting }] = useMutation(CREATE_VOTE);
+
   const question = questionData?.question;
   const answers = answersData?.answersByQuestion || [];
 
@@ -54,10 +92,64 @@ export default function QuestionDetailPage() {
     return 'Just now';
   };
 
-  const handleUpvote = (answerId: string) => {
-    if (!user || upvoted[answerId]) return;
-    setUpvoted(u => ({ ...u, [answerId]: true }));
-    // TODO: Implement actual upvote mutation
+  const handleUpvote = async (answerId: string) => {
+    if (!user) return;
+    
+    try {
+      await createVote({
+        variables: {
+          createVoteInput: {
+            answerId,
+            voteType: 'UPVOTE'
+          }
+        }
+      });
+      
+      // Toggle local state
+      if (upvoted[answerId]) {
+        setUpvoted(u => ({ ...u, [answerId]: false }));
+      } else {
+        setUpvoted(u => ({ ...u, [answerId]: true }));
+        setDownvoted(d => ({ ...d, [answerId]: false }));
+      }
+      
+      // Refetch vote stats
+      if (voteStatsRefetch[answerId]) {
+        voteStatsRefetch[answerId]();
+      }
+    } catch (error: any) {
+      console.error("Error voting:", error);
+    }
+  };
+
+  const handleDownvote = async (answerId: string) => {
+    if (!user) return;
+    
+    try {
+      await createVote({
+        variables: {
+          createVoteInput: {
+            answerId,
+            voteType: 'DOWNVOTE'
+          }
+        }
+      });
+      
+      // Toggle local state
+      if (downvoted[answerId]) {
+        setDownvoted(d => ({ ...d, [answerId]: false }));
+      } else {
+        setDownvoted(d => ({ ...d, [answerId]: true }));
+        setUpvoted(u => ({ ...u, [answerId]: false }));
+      }
+      
+      // Refetch vote stats
+      if (voteStatsRefetch[answerId]) {
+        voteStatsRefetch[answerId]();
+      }
+    } catch (error: any) {
+      console.error("Error voting:", error);
+    }
   };
 
   const handleAnswer = async (e: React.FormEvent) => {
@@ -189,14 +281,31 @@ export default function QuestionDetailPage() {
                               : "bg-[#313338] text-[#b5bac1] hover:bg-[#5865f2] hover:text-white"
                           }`}
                           onClick={() => handleUpvote(answer.id)}
-                          disabled={!user || !!upvoted[answer.id]}
+                          disabled={!user || voting}
                           title={!user ? "Login to upvote" : upvoted[answer.id] ? "Already upvoted" : "Upvote"}
                         >
                           <span className="material-symbols-outlined text-xl">arrow_upward</span>
                         </button>
-                        <span className="text-white font-semibold text-lg">0</span>
+                        {/* Upvotes/Downvotes */}
+                        <AnswerVoteStats 
+                          answerId={answer.id} 
+                          onRefetch={(refetchFn) => {
+                            setVoteStatsRefetch(prev => ({ ...prev, [answer.id]: refetchFn }));
+                          }}
+                        />
+                        <button
+                          className={`p-2 rounded-lg transition-colors ${
+                            downvoted[answer.id] 
+                              ? "bg-[#5865f2] text-white" 
+                              : "bg-[#313338] text-[#b5bac1] hover:bg-[#5865f2] hover:text-white"
+                          }`}
+                          onClick={() => handleDownvote(answer.id)}
+                          disabled={!user || voting}
+                          title={!user ? "Login to downvote" : downvoted[answer.id] ? "Already downvoted" : "Downvote"}
+                        >
+                          <span className="material-symbols-outlined text-xl">arrow_downward</span>
+                        </button>
                       </div>
-                      
                       {/* Answer Content */}
                       <div className="flex-1">
                         <div className="text-white mb-4 leading-relaxed whitespace-pre-wrap">{answer.content}</div>
@@ -232,7 +341,7 @@ export default function QuestionDetailPage() {
                       onChange={(value) => setAnswerText(value || "")}
                       height={150}
                       preview="edit"
-                      className="rounded"
+                      className="rounded mdeditor-dark-font"
                     />
                   </div>
                   <button 

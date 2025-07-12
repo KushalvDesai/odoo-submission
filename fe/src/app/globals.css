@@ -60,12 +60,10 @@ body {
   border: none !important;
 }
 
-.w-md-editor-text {
-  background-color: #40444b !important;
-  color: #ffffff !important;
-}
-
-.w-md-editor-text-input {
+.w-md-editor-text,
+.w-md-editor-text-input,
+.w-md-editor-preview,
+.w-md-editor-preview-markdown {
   background-color: #40444b !important;
   color: #ffffff !important;
 }
@@ -77,6 +75,11 @@ body {
 
 .w-md-editor-text-pre > code,
 .w-md-editor-text-input > code {
+  color: #ffffff !important;
+}
+
+.w-md-editor-preview,
+.w-md-editor-preview-markdown {
   color: #ffffff !important;
 }
 
@@ -94,4 +97,25 @@ body {
 
 .notification-dropdown {
   animation: slideDown 0.2s ease-out;
+}
+
+/* Make markdown editor and preview text white in dark mode */
+.mdeditor-dark-font .w-md-editor-text,
+.mdeditor-dark-font .w-md-editor-text-pre,
+.mdeditor-dark-font .w-md-editor-toolbar,
+.mdeditor-dark-font .w-md-editor-content,
+.mdeditor-dark-font .w-md-editor,
+.mdeditor-dark-font .w-md-editor-preview,
+.mdeditor-dark-font .w-md-editor-preview-content,
+.mdeditor-dark-font .w-md-editor-preview .wmde-markdown,
+.mdeditor-dark-font .w-md-editor-preview .wmde-markdown * {
+  color: #fff !important;
+  background: transparent !important;
+}
+
+/* For preview outside editor (if any) */
+.wmde-markdown[data-color-mode="dark"],
+.wmde-markdown[data-color-mode="dark"] * {
+  color: #fff !important;
+  background: transparent !important;
 }

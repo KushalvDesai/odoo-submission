@@ -1,7 +1,7 @@
 "use client";
-import React, { useState } from "react";
-import { useQuery } from "@apollo/client";
-import { GET_QUESTIONS } from "../lib/graphql-queries";
+import React, { useState, useEffect } from "react";
+import { useQuery, useApolloClient } from "@apollo/client";
+import { GET_QUESTIONS, GET_ANSWERS_BY_QUESTION, GET_VOTE_STATS } from "../lib/graphql-queries";
 import QuestionCard from "./QuestionCard";
 
 type Question = {
@@ -59,14 +59,47 @@ const filterQuestions = (questions: Question[], filter: string, search: string, 
   return filtered;
 };
 
-const QuestionList = ({ filter, search, selectedTags = [], onTagClick, onClearTags }: QuestionListProps) => {
+export default function QuestionList({ filter, search, selectedTags = [], onTagClick, onClearTags }: QuestionListProps) {
   const [page, setPage] = useState(1);
-  
-  // Fetch questions from GraphQL API
   const { data, loading, error } = useQuery(GET_QUESTIONS);
-  
-  // Reset to page 1 when filters change
-  React.useEffect(() => {
+  const client = useApolloClient();
+  const [questionStats, setQuestionStats] = useState<Record<string, { answers: number; upvotes: number; downvotes: number }>>({});
+
+  useEffect(() => {
+    async function fetchStats() {
+      if (!data?.questions) return;
+      const stats: Record<string, { answers: number; upvotes: number; downvotes: number }> = {};
+      for (const q of data.questions) {
+        // Fetch answers for this question
+        const ansRes = await client.query({
+          query: GET_ANSWERS_BY_QUESTION,
+          variables: { questionId: q.id },
+        });
+        const answers = ansRes.data?.answersByQuestion || [];
+        let upvotes = 0;
+        let downvotes = 0;
+        // For each answer, fetch vote stats
+        for (const a of answers) {
+          const voteRes = await client.query({
+            query: GET_VOTE_STATS,
+            variables: { answerId: a.id },
+          });
+          let statsObj = { upvotes: 0, downvotes: 0 };
+          try {
+            statsObj = JSON.parse(voteRes.data?.voteStats || '{}');
+          } catch {}
+          upvotes += statsObj.upvotes || 0;
+          downvotes += statsObj.downvotes || 0;
+        }
+        stats[q.id] = { answers: answers.length, upvotes, downvotes };
+      }
+      setQuestionStats(stats);
+    }
+    fetchStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
+
+  useEffect(() => {
     setPage(1);
   }, [filter, search, selectedTags]);
 
@@ -130,20 +163,24 @@ const QuestionList = ({ filter, search, selectedTags = [], onTagClick, onClearTa
         </div>
       )}
       
-      {paged.map((question) => (
-        <QuestionCard 
-          key={question.id}
-          id={question.id}
-          title={question.title}
-          description={question.desc}
-          tags={question.tags}
-          user={question.author}
-          answers={0} // TODO: Add answer count from API
-          createdAt={new Date(question.createdAt)}
-          upvotes={0} // TODO: Add upvote count from API
-          onTagClick={onTagClick}
-        />
-      ))}
+      {paged.map((question) => {
+        const stats = questionStats[question.id] || { answers: 0, upvotes: 0, downvotes: 0 };
+        return (
+          <QuestionCard
+            key={question.id}
+            id={question.id}
+            title={question.title}
+            description={question.desc}
+            tags={question.tags}
+            user={question.author}
+            answers={stats.answers}
+            upvotes={stats.upvotes}
+            downvotes={stats.downvotes}
+            createdAt={new Date(question.createdAt)}
+            onTagClick={onTagClick}
+          />
+        );
+      })}
       
       {/* Pagination */}
       {pageCount > 1 && (
@@ -203,6 +240,4 @@ const QuestionList = ({ filter, search, selectedTags = [], onTagClick, onClearTa
       )}
     </div>
   );
-};
-
-export default QuestionList; 
+} 

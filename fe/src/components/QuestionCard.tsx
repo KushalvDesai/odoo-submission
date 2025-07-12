@@ -10,6 +10,7 @@ type QuestionCardProps = {
   user: string;
   answers: number;
   upvotes?: number;
+  downvotes?: number;
   createdAt?: Date;
   onTagClick?: (tag: string) => void;
 };
@@ -22,6 +23,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   user, 
   answers, 
   upvotes = 0,
+  downvotes = 0,
   createdAt,
   onTagClick 
 }) => {
@@ -40,12 +42,11 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   };
 
   const handleCardClick = () => {
-    // Navigate to question detail page using the question ID
     router.push(`/question/${id}`);
   };
 
   const handleTagClick = (e: React.MouseEvent, tag: string) => {
-    e.stopPropagation(); // Prevent card click when clicking tag
+    e.stopPropagation();
     if (onTagClick) {
       onTagClick(tag);
     }
@@ -79,6 +80,10 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           <span className="flex items-center gap-1">
             <span className="material-symbols-outlined text-sm">thumb_up</span>
             {upvotes}
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="material-symbols-outlined text-sm">thumb_down</span>
+            {downvotes}
           </span>
           <span className="flex items-center gap-1">
             <span className="material-symbols-outlined text-sm">question_answer</span>
