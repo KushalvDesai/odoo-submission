@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { useRouter } from "next/navigation";
+import { MessageSquare, ThumbsUp, ThumbsDown, Clock, User } from 'lucide-react';
 
 type QuestionCardProps = {
   id: string;
@@ -54,16 +55,33 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
 
   return (
     <div 
-      className="bg-[#313338] text-white rounded-xl p-5 mb-4 shadow flex flex-col gap-2 relative font-sans transition hover:shadow-lg hover:bg-[#36393f] cursor-pointer"
+      className="card hover-lift animate-fade-in cursor-pointer group"
       onClick={handleCardClick}
     >
-      <div className="text-lg font-semibold mb-1 line-clamp-2">{title}</div>
-      <div className="text-sm text-[#b5bac1] mb-2 line-clamp-2">{description}</div>
-      <div className="flex flex-wrap gap-2 mb-2">
+      {/* Header */}
+      <div className="flex items-start justify-between mb-3">
+        <h3 className="text-lg font-semibold text-foreground-primary group-hover:text-accent-primary transition-colors line-clamp-2 flex-1">
+          {title}
+        </h3>
+        <div className="flex items-center space-x-2 ml-4">
+          <div className="flex items-center space-x-1 text-xs text-foreground-tertiary">
+            <Clock className="w-3 h-3" />
+            <span>{formatDate(createdAt)}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Description */}
+      <p className="text-sm text-foreground-secondary mb-4 line-clamp-2">
+        {description}
+      </p>
+
+      {/* Tags */}
+      <div className="flex flex-wrap gap-2 mb-4">
         {tags.map((tag, idx) => (
           <button
             key={idx}
-            className="bg-[#40444b] text-xs px-2 py-1 rounded-md text-[#b5bac1] hover:bg-[#5865f2] hover:text-white transition-colors"
+            className="badge badge-primary hover-scale transition-all duration-200 text-xs"
             onClick={(e) => handleTagClick(e, tag)}
             type="button"
           >
@@ -71,26 +89,34 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           </button>
         ))}
       </div>
-      <div className="flex items-center justify-between text-xs text-[#b5bac1]">
-        <div className="flex items-center gap-4">
-          <span>by {user}</span>
-          {createdAt && <span>{formatDate(createdAt)}</span>}
+
+      {/* Footer */}
+      <div className="flex items-center justify-between pt-3 border-t border-border-primary">
+        <div className="flex items-center space-x-4 text-xs text-foreground-tertiary">
+          <div className="flex items-center space-x-1">
+            <User className="w-3 h-3" />
+            <span>{user}</span>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1">
-            <span className="material-symbols-outlined text-sm">thumb_up</span>
-            {upvotes}
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="material-symbols-outlined text-sm">thumb_down</span>
-            {downvotes}
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="material-symbols-outlined text-sm">question_answer</span>
-            {answers}
-          </span>
+        
+        <div className="flex items-center space-x-4 text-xs text-foreground-tertiary">
+          <div className="flex items-center space-x-1">
+            <ThumbsUp className="w-3 h-3" />
+            <span className="font-medium text-foreground-secondary">{upvotes}</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <ThumbsDown className="w-3 h-3" />
+            <span className="font-medium text-foreground-secondary">{downvotes}</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <MessageSquare className="w-3 h-3" />
+            <span className="font-medium text-foreground-secondary">{answers}</span>
+          </div>
         </div>
       </div>
+
+      {/* Hover effect overlay */}
+      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-accent-primary/5 to-accent-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
     </div>
   );
 };

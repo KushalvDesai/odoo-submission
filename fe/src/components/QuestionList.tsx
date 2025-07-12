@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useQuery, useApolloClient } from "@apollo/client";
 import { GET_QUESTIONS, GET_ANSWERS_BY_QUESTION, GET_VOTE_STATS } from "../lib/graphql-queries";
 import QuestionCard from "./QuestionCard";
+import { Filter, X, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 
 type Question = {
   id: string;
@@ -106,9 +107,9 @@ export default function QuestionList({ filter, search, selectedTags = [], onTagC
   if (loading) {
     return (
       <div className="w-full flex flex-col gap-2 mt-6">
-        <div className="text-[#b5bac1] text-center py-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#5865f2] mx-auto mb-4"></div>
-          <div className="text-lg">Loading questions...</div>
+        <div className="text-center py-12 animate-fade-in">
+          <div className="spinner mx-auto mb-4" />
+          <div className="text-foreground-secondary">Loading questions...</div>
         </div>
       </div>
     );
@@ -117,9 +118,9 @@ export default function QuestionList({ filter, search, selectedTags = [], onTagC
   if (error) {
     return (
       <div className="w-full flex flex-col gap-2 mt-6">
-        <div className="text-red-400 text-center py-8">
-          <div className="text-lg mb-2">Error loading questions</div>
-          <div className="text-sm">{error.message}</div>
+        <div className="text-center py-12 animate-fade-in">
+          <div className="text-lg text-error mb-2">Error loading questions</div>
+          <div className="text-sm text-foreground-secondary">{error.message}</div>
         </div>
       </div>
     );
@@ -132,55 +133,67 @@ export default function QuestionList({ filter, search, selectedTags = [], onTagC
 
   return (
     <div className="w-full flex flex-col gap-2 mt-6">
+      {/* Active Filters */}
       {selectedTags.length > 0 && onClearTags && (
-        <div className="mb-2 flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-[#b5bac1]">Filtering by tags:</span>
-          {selectedTags.map((tag, index) => (
-            <span key={index} className="bg-[#5865f2] text-white text-xs px-2 py-1 rounded flex items-center gap-1">
-              {tag}
-              <button
-                className="ml-1 hover:text-[#f04747] transition-colors"
-                onClick={() => onTagClick && onTagClick(tag)}
-                title="Remove tag"
-              >
-                ×
-              </button>
-            </span>
-          ))}
-          <button
-            className="text-xs text-[#f04747] underline ml-2"
-            onClick={onClearTags}
-          >
-            Clear All
-          </button>
+        <div className="mb-6 p-4 bg-background-secondary rounded-lg border border-border-primary">
+          <div className="flex items-center gap-2 mb-3">
+            <Filter className="w-4 h-4 text-foreground-tertiary" />
+            <span className="text-sm font-medium text-foreground-primary">Active Filters:</span>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            {selectedTags.map((tag, index) => (
+              <span key={index} className="badge badge-primary flex items-center gap-1">
+                {tag}
+                <button
+                  className="ml-1 hover:text-error transition-colors"
+                  onClick={() => onTagClick && onTagClick(tag)}
+                  title="Remove tag"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            ))}
+            <button
+              className="text-sm text-error underline hover:text-foreground-primary transition-colors"
+              onClick={onClearTags}
+            >
+              Clear All
+            </button>
+          </div>
         </div>
       )}
       
+      {/* No Results */}
       {filtered.length === 0 && (
-        <div className="text-[#b5bac1] text-center py-8">
-          <div className="text-lg mb-2">No questions found</div>
-          <div className="text-sm">Try adjusting your search or filters</div>
+        <div className="text-center py-12 animate-fade-in">
+          <Search className="w-12 h-12 text-foreground-tertiary mx-auto mb-4" />
+          <div className="text-lg text-foreground-primary mb-2">No questions found</div>
+          <div className="text-foreground-secondary">Try adjusting your search or filters</div>
         </div>
       )}
       
-      {paged.map((question) => {
-        const stats = questionStats[question.id] || { answers: 0, upvotes: 0, downvotes: 0 };
-        return (
-          <QuestionCard
-            key={question.id}
-            id={question.id}
-            title={question.title}
-            description={question.desc}
-            tags={question.tags}
-            user={question.author}
-            answers={stats.answers}
-            upvotes={stats.upvotes}
-            downvotes={stats.downvotes}
-            createdAt={new Date(question.createdAt)}
-            onTagClick={onTagClick}
-          />
-        );
-      })}
+      {/* Questions List */}
+      <div className="space-y-4">
+        {paged.map((question, index) => {
+          const stats = questionStats[question.id] || { answers: 0, upvotes: 0, downvotes: 0 };
+          return (
+            <div key={question.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+              <QuestionCard
+                id={question.id}
+                title={question.title}
+                description={question.desc}
+                tags={question.tags}
+                user={question.author}
+                answers={stats.answers}
+                upvotes={stats.upvotes}
+                downvotes={stats.downvotes}
+                createdAt={new Date(question.createdAt)}
+                onTagClick={onTagClick}
+              />
+            </div>
+          );
+        })}
+      </div>
       
       {/* Pagination */}
       {pageCount > 1 && (
@@ -188,9 +201,10 @@ export default function QuestionList({ filter, search, selectedTags = [], onTagC
           <button
             onClick={() => setPage(p => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="px-3 py-2 rounded-lg bg-[#40444b] text-white hover:bg-[#5865f2] disabled:bg-[#23272a] disabled:text-[#b5bac1] transition-colors"
+            className="btn btn-secondary hover-scale disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
           >
-            Previous
+            <ChevronLeft className="w-4 h-4" />
+            <span>Previous</span>
           </button>
           
           <div className="flex items-center gap-1">
@@ -210,10 +224,10 @@ export default function QuestionList({ filter, search, selectedTags = [], onTagC
                 <button
                   key={pageNum}
                   onClick={() => setPage(pageNum)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover-scale ${
                     pageNum === page
-                      ? "bg-[#5865f2] text-white"
-                      : "bg-[#40444b] text-white hover:bg-[#313338]"
+                      ? "bg-accent-primary text-white shadow-lg"
+                      : "bg-background-secondary text-foreground-primary hover:bg-background-tertiary"
                   }`}
                 >
                   {pageNum}
@@ -225,16 +239,17 @@ export default function QuestionList({ filter, search, selectedTags = [], onTagC
           <button
             onClick={() => setPage(p => Math.min(pageCount, p + 1))}
             disabled={page === pageCount}
-            className="px-3 py-2 rounded-lg bg-[#40444b] text-white hover:bg-[#5865f2] disabled:bg-[#23272a] disabled:text-[#b5bac1] transition-colors"
+            className="btn btn-secondary hover-scale disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
           >
-            Next
+            <span>Next</span>
+            <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       )}
       
-      {/* Show total count */}
+      {/* Results Count */}
       {filtered.length > 0 && (
-        <div className="text-center text-xs text-[#b5bac1] mt-4">
+        <div className="text-center text-sm text-foreground-tertiary mt-6">
           Showing {((page - 1) * PAGE_SIZE) + 1} to {Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length} questions
         </div>
       )}

@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { useRouter } from "next/navigation";
+import { Plus, Search, Filter } from 'lucide-react';
 
 type TopBarProps = {
   filter: string;
@@ -21,39 +22,50 @@ const sortOptions = [
 
 const TopBar = ({ filter, setFilter, search, setSearch }: TopBarProps) => {
   const router = useRouter();
+  
   return (
-    <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-4 bg-[#313338] px-4 sm:px-8 py-4 border-b border-[#23272a] rounded-none font-sans">
-      <div className="flex items-center gap-2 w-full sm:w-auto">
-        <button
-          className="bg-[#5865f2] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#4752c4] transition-colors shadow"
-          onClick={() => router.push("/ask")}
-        >
-          Ask New Question
-        </button>
-        <div className="flex gap-2 items-center ml-2">
-          <div className="relative">
-            <select
-              value={filter}
-              onChange={e => setFilter(e.target.value)}
-              className="bg-[#40444b] text-white px-3 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5865f2] appearance-none pr-6"
-            >
-              {sortOptions.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-            <span className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-xs text-[#b5bac1]">▼</span>
+    <div className="w-full bg-background-secondary border-b border-border-primary px-4 sm:px-8 py-6">
+      <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+        {/* Left side - Ask button and filter */}
+        <div className="flex items-center gap-4 w-full sm:w-auto">
+          <button
+            className="btn btn-primary hover-scale flex items-center space-x-2"
+            onClick={() => router.push("/ask")}
+          >
+            <Plus className="w-4 h-4" />
+            <span>Ask New Question</span>
+          </button>
+          
+          <div className="flex items-center space-x-2">
+            <Filter className="w-4 h-4 text-foreground-tertiary" />
+            <div className="relative">
+              <select
+                value={filter}
+                onChange={e => setFilter(e.target.value)}
+                className="input pr-8 appearance-none cursor-pointer hover:border-border-secondary transition-colors"
+              >
+                {sortOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-foreground-tertiary" />
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-      <div className="flex items-center bg-[#40444b] rounded-md px-2 py-1 w-full sm:w-auto max-w-md">
-        <input
-          type="text"
-          placeholder="Search"
-          className="bg-transparent outline-none text-white px-2 py-1 w-full placeholder-gray-400"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
-        <span className="text-white text-lg cursor-pointer">🔍</span>
+        
+        {/* Right side - Search */}
+        <div className="relative w-full sm:w-auto max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-foreground-tertiary" />
+          <input
+            type="text"
+            placeholder="Search questions..."
+            className="input pl-10 pr-4 w-full"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
       </div>
     </div>
   );

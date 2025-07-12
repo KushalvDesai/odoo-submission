@@ -8,6 +8,7 @@ import { useAuth } from "../../../contexts/AuthContext";
 import { parseMentions, validateMentions } from "../../../utils/mentions";
 import Header from "../../../components/Header";
 import dynamic from "next/dynamic";
+import { ArrowUp, ArrowDown, MessageSquare, Clock, User, CheckCircle, Send, AlertCircle } from 'lucide-react';
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
 import { useQuery as useApolloQuery } from "@apollo/client";
@@ -39,9 +40,9 @@ function AnswerVoteStats({ answerId, onRefetch }: { answerId: string; onRefetch?
     } catch {}
   }
   return (
-    <div className="flex flex-col items-center gap-1">
-      <span className="text-green-400 font-bold text-sm">▲ {upvotes}</span>
-      <span className="text-red-400 font-bold text-sm">▼ {downvotes}</span>
+    <div className="flex flex-col items-center gap-1 text-sm">
+      <span className="text-success font-bold">▲ {upvotes}</span>
+      <span className="text-error font-bold">▼ {downvotes}</span>
     </div>
   );
 }
@@ -193,12 +194,12 @@ export default function QuestionDetailPage() {
 
   if (questionLoading) {
     return (
-      <div className="min-h-screen bg-[#23272a] flex flex-col">
+      <div className="min-h-screen bg-background-primary flex flex-col">
         <Header />
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-[#b5bac1] text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#5865f2] mx-auto mb-4"></div>
-            <div className="text-lg">Loading question...</div>
+          <div className="text-center animate-fade-in">
+            <div className="spinner mx-auto mb-4" />
+            <div className="text-foreground-secondary">Loading question...</div>
           </div>
         </div>
       </div>
@@ -207,15 +208,16 @@ export default function QuestionDetailPage() {
 
   if (questionError || !question) {
     return (
-      <div className="min-h-screen bg-[#23272a] flex flex-col">
+      <div className="min-h-screen bg-background-primary flex flex-col">
         <Header />
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-red-400 text-center">
-            <div className="text-lg mb-2">Question not found</div>
-            <div className="text-sm">{questionError?.message}</div>
+          <div className="text-center animate-fade-in">
+            <AlertCircle className="w-12 h-12 text-error mx-auto mb-4" />
+            <div className="text-lg text-foreground-primary mb-2">Question not found</div>
+            <div className="text-sm text-foreground-secondary mb-4">{questionError?.message}</div>
             <button 
               onClick={() => router.push("/")}
-              className="mt-4 bg-[#5865f2] text-white py-2 px-4 rounded font-semibold hover:bg-[#4752c4] transition"
+              className="btn btn-primary hover-scale"
             >
               Go Home
             </button>
@@ -226,65 +228,75 @@ export default function QuestionDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#23272a] flex flex-col">
+    <div className="min-h-screen bg-background-primary flex flex-col">
       <Header />
-      <div className="flex-1 py-8 px-2">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-[#313338] p-4 sm:p-8 rounded-xl shadow-lg">
+      <div className="flex-1 py-8 px-4">
+        <div className="max-w-4xl mx-auto animate-fade-in">
+          <div className="card">
             {/* Breadcrumbs */}
-            <div className="text-xs text-[#b5bac1] mb-4 flex items-center gap-2">
-              <button onClick={() => router.push("/")} className="hover:underline">Home</button>
+            <div className="text-xs text-foreground-tertiary mb-6 flex items-center gap-2">
+              <button onClick={() => router.push("/")} className="hover:text-foreground-primary transition-colors">Home</button>
               <span className="mx-1">/</span>
               <span className="truncate max-w-[200px] sm:max-w-xs">{question.title.slice(0, 40)}{question.title.length > 40 ? "..." : ""}</span>
             </div>
             
             {/* Question */}
             <div className="mb-8">
-              <h1 className="text-2xl font-bold text-white mb-3">{question.title}</h1>
-              <div className="text-[#b5bac1] mb-4 leading-relaxed whitespace-pre-wrap">{question.desc}</div>
-              <div className="flex gap-2 mb-4 flex-wrap">
+              <h1 className="text-3xl font-bold text-foreground-primary mb-4">{question.title}</h1>
+              <div className="text-foreground-secondary mb-6 leading-relaxed whitespace-pre-wrap">{question.desc}</div>
+              <div className="flex gap-2 mb-6 flex-wrap">
                 {question.tags.map((tag: string, idx: number) => (
-                  <span key={idx} className="bg-[#40444b] text-xs px-2 py-1 rounded-md text-[#b5bac1]">{tag}</span>
+                  <span key={idx} className="badge badge-primary">{tag}</span>
                 ))}
               </div>
-              <div className="flex items-center justify-between text-xs text-[#b5bac1]">
+              <div className="flex items-center justify-between text-sm text-foreground-tertiary">
                 <div className="flex items-center gap-4">
-                  <span>Asked by {question.author}</span>
-                  <span>{formatDate(question.createdAt)}</span>
+                  <div className="flex items-center space-x-1">
+                    <User className="w-4 h-4" />
+                    <span>Asked by {question.author}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Clock className="w-4 h-4" />
+                    <span>{formatDate(question.createdAt)}</span>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Answers */}
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Answers ({answers.length})</h2>
+            <div className="mb-8">
+              <h2 className="text-2xl font-semibold text-foreground-primary mb-6 flex items-center space-x-2">
+                <MessageSquare className="w-6 h-6" />
+                <span>Answers ({answers.length})</span>
+              </h2>
               {answersLoading ? (
-                <div className="text-[#b5bac1] text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#5865f2] mx-auto mb-2"></div>
-                  <div className="text-sm">Loading answers...</div>
+                <div className="text-center py-8">
+                  <div className="spinner mx-auto mb-4" />
+                  <div className="text-foreground-secondary">Loading answers...</div>
                 </div>
               ) : answers.length === 0 ? (
-                <div className="text-[#b5bac1] text-center py-8 bg-[#40444b] rounded-lg">
-                  <div className="text-lg mb-2">No answers yet</div>
-                  <div className="text-sm">Be the first to answer this question!</div>
+                <div className="text-center py-12 bg-background-tertiary rounded-lg">
+                  <MessageSquare className="w-12 h-12 text-foreground-tertiary mx-auto mb-4" />
+                  <div className="text-lg text-foreground-primary mb-2">No answers yet</div>
+                  <div className="text-foreground-secondary">Be the first to answer this question!</div>
                 </div>
               ) : (
                 answers.map((answer: any, index: number) => (
-                  <div key={answer.id} className="bg-[#40444b] rounded-lg p-6 mb-4">
-                    <div className="flex gap-4">
+                  <div key={answer.id} className="card mb-6 hover-lift">
+                    <div className="flex gap-6">
                       {/* Voting */}
-                      <div className="flex flex-col items-center gap-2">
+                      <div className="flex flex-col items-center gap-3">
                         <button
-                          className={`p-2 rounded-lg transition-colors ${
+                          className={`p-2 rounded-lg transition-all duration-200 hover-scale ${
                             upvoted[answer.id] 
-                              ? "bg-[#5865f2] text-white" 
-                              : "bg-[#313338] text-[#b5bac1] hover:bg-[#5865f2] hover:text-white"
+                              ? "bg-accent-primary text-white shadow-lg" 
+                              : "bg-background-tertiary text-foreground-tertiary hover:bg-accent-primary hover:text-white"
                           }`}
                           onClick={() => handleUpvote(answer.id)}
                           disabled={!user || voting}
                           title={!user ? "Login to upvote" : upvoted[answer.id] ? "Already upvoted" : "Upvote"}
                         >
-                          <span className="material-symbols-outlined text-xl">arrow_upward</span>
+                          <ArrowUp className="w-5 h-5" />
                         </button>
                         {/* Upvotes/Downvotes */}
                         <AnswerVoteStats 
@@ -294,31 +306,32 @@ export default function QuestionDetailPage() {
                           }}
                         />
                         <button
-                          className={`p-2 rounded-lg transition-colors ${
+                          className={`p-2 rounded-lg transition-all duration-200 hover-scale ${
                             downvoted[answer.id] 
-                              ? "bg-[#5865f2] text-white" 
-                              : "bg-[#313338] text-[#b5bac1] hover:bg-[#5865f2] hover:text-white"
+                              ? "bg-accent-primary text-white shadow-lg" 
+                              : "bg-background-tertiary text-foreground-tertiary hover:bg-accent-primary hover:text-white"
                           }`}
                           onClick={() => handleDownvote(answer.id)}
                           disabled={!user || voting}
                           title={!user ? "Login to downvote" : downvoted[answer.id] ? "Already downvoted" : "Downvote"}
                         >
-                          <span className="material-symbols-outlined text-xl">arrow_downward</span>
+                          <ArrowDown className="w-5 h-5" />
                         </button>
                       </div>
                       {/* Answer Content */}
                       <div className="flex-1">
-                        <div className="text-white mb-4 leading-relaxed whitespace-pre-wrap">{answer.content}</div>
-                        <div className="flex items-center justify-between text-xs text-[#b5bac1]">
+                        <div className="text-foreground-primary mb-4 leading-relaxed whitespace-pre-wrap">{answer.content}</div>
+                        <div className="flex items-center justify-between text-sm text-foreground-tertiary">
                           <div className="flex items-center gap-4">
-                            <span>Answered by {answer.author}</span>
-                            <span>{formatDate(answer.createdAt)}</span>
+                            <div className="flex items-center space-x-1">
+                              <User className="w-4 h-4" />
+                              <span>Answered by {answer.author}</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <Clock className="w-4 h-4" />
+                              <span>{formatDate(answer.createdAt)}</span>
+                            </div>
                           </div>
-                          {index === 0 && (
-                            <span className="bg-[#57f287] text-black px-2 py-1 rounded text-xs font-semibold">
-                              ✓ Accepted
-                            </span>
-                          )}
                         </div>
                       </div>
                     </div>
@@ -329,36 +342,50 @@ export default function QuestionDetailPage() {
 
             {/* Answer Form */}
             {user ? (
-              <div className="bg-[#40444b] rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-white mb-4">Your Answer</h3>
-                <form onSubmit={handleAnswer} className="flex flex-col gap-4">
-                  <div className="text-sm text-[#b5bac1] p-3 bg-[#313338] rounded-lg">
-                    <strong>Tip:</strong> Use @username to mention other users (e.g., @alice, @bob). You can also use markdown formatting.
+              <div className="card">
+                <h3 className="text-xl font-semibold text-foreground-primary mb-6">Your Answer</h3>
+                <form onSubmit={handleAnswer} className="space-y-6">
+                  <div className="p-4 bg-accent-tertiary rounded-lg">
+                    <div className="flex items-center space-x-2 text-sm text-foreground-secondary">
+                      <AlertCircle className="w-4 h-4" />
+                      <span>Tip: Use @username to mention other users (e.g., @alice, @bob). You can also use markdown formatting.</span>
+                    </div>
                   </div>
                   <div data-color-mode="dark">
                     <MDEditor
                       value={answerText}
                       onChange={(value) => setAnswerText(value || "")}
-                      height={150}
+                      height={200}
                       preview="edit"
-                      className="rounded"
+                      className="rounded-lg"
                     />
                   </div>
                   <button 
                     type="submit" 
-                    className="bg-[#5865f2] text-white py-3 px-6 rounded-lg font-semibold hover:bg-[#4752c4] transition self-end"
-                    disabled={!answerText.trim()}
+                    className="btn btn-primary hover-scale flex items-center space-x-2"
+                    disabled={!answerText.trim() || creatingAnswer}
                   >
-                    Post Answer
+                    {creatingAnswer ? (
+                      <>
+                        <div className="spinner" />
+                        <span>Posting Answer...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        <span>Post Answer</span>
+                      </>
+                    )}
                   </button>
                 </form>
               </div>
             ) : (
-              <div className="text-[#b5bac1] text-center py-8 bg-[#40444b] rounded-lg">
-                <div className="text-lg mb-2">Want to answer this question?</div>
-                <div className="text-sm mb-4">Please login to submit an answer or upvote.</div>
+              <div className="card text-center">
+                <MessageSquare className="w-12 h-12 text-foreground-tertiary mx-auto mb-4" />
+                <div className="text-lg text-foreground-primary mb-2">Want to answer this question?</div>
+                <div className="text-foreground-secondary mb-6">Please login to submit an answer or upvote.</div>
                 <button 
-                  className="bg-[#5865f2] text-white py-2 px-4 rounded font-semibold hover:bg-[#4752c4] transition"
+                  className="btn btn-primary hover-scale"
                   onClick={() => router.push("/login")}
                 >
                   Login
