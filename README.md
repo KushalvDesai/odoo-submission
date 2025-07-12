@@ -287,6 +287,16 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👥 Team
 
+**StackIt Development Team**
+
+| Role | Name | Email |
+|------|------|-------|
+| Team Lead (TL) | Yash Bharvada | kingisright67@gmail.com |
+| Developer | Kushal Desai | kushal.desaiofficial@gmail.com |
+| Developer | Shrey Lakhtaria | shreylakhtaria@gmail.com |
+| Developer | Aaleya Boxwala | aaleya.boxwala@gmail.com |
+
+**Repository Information**
 - **Repository**: [stackit-1602](https://github.com/KushalvDesai/stackit-1602)
 - **Owner**: [KushalvDesai](https://github.com/KushalvDesai)
 - **Current Branch**: Shrey-BE
