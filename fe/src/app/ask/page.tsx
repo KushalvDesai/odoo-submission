@@ -41,7 +41,7 @@ export default function AskPage() {
           <div data-color-mode="dark">
             <MDEditor
               value={description}
-              onChange={setDescription}
+              onChange={(value) => setDescription(value || "")}
               height={150}
               preview="edit"
               className="rounded"

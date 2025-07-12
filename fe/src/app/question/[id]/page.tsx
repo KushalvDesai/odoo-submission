@@ -1,8 +1,13 @@
 "use client";
-
 import React, { useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useNotification } from "../../components/NotificationContext";
+import { useAuth } from "../../components/AuthContext";
+import dynamic from "next/dynamic";
+import "@uiw/react-md-editor/markdown-editor.css";
+import "@uiw/react-markdown-preview/markdown.css";
+
+const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
 const mockQuestion = {
   title: "How to join 2 columns in a data set to make a separate column in SQL",
@@ -20,9 +25,11 @@ export default function QuestionDetailPage() {
   const [answerText, setAnswerText] = useState("");
   const [upvoted, setUpvoted] = useState<{ [key: number]: boolean }>({});
   const { addNotification } = useNotification();
+  const { user } = useAuth();
+  const router = useRouter();
 
   const handleUpvote = (id: number) => {
-    if (upvoted[id]) return;
+    if (!user || upvoted[id]) return;
     setAnswers(ans => ans.map(a => a.id === id ? { ...a, upvotes: a.upvotes + 1 } : a));
     setUpvoted(u => ({ ...u, [id]: true }));
   };
@@ -32,14 +39,12 @@ export default function QuestionDetailPage() {
     if (!answerText) return;
     setAnswers(ans => [
       ...ans,
-      { id: Date.now(), text: answerText, user: "You", upvotes: 0 },
+      { id: Date.now(), text: answerText, user: user?.email.split("@")[0] || "You", upvotes: 0 },
     ]);
-    // Trigger notification for answer
     addNotification({
       message: `You answered: '${mockQuestion.title}'`,
       link: "/question/1",
     });
-    // Trigger mention notification if answer contains '@'
     if (answerText.includes("@")) {
       addNotification({
         message: `@username was mentioned in your answer`,
@@ -50,11 +55,17 @@ export default function QuestionDetailPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#23272a] py-8">
-      <div className="bg-[#313338] p-8 rounded-xl shadow-lg w-full max-w-2xl">
+    <div className="min-h-screen flex items-center justify-center bg-[#23272a] py-8 px-2">
+      <div className="bg-[#313338] p-4 sm:p-8 rounded-xl shadow-lg w-full max-w-2xl">
+        {/* Breadcrumbs */}
+        <div className="text-xs text-[#b5bac1] mb-4 flex items-center gap-2">
+          <button onClick={() => router.push("/")} className="hover:underline">Home</button>
+          <span className="mx-1">/</span>
+          <span className="truncate max-w-[200px] sm:max-w-xs">{mockQuestion.title.slice(0, 40)}{mockQuestion.title.length > 40 ? "..." : ""}</span>
+        </div>
         <h2 className="text-2xl font-bold text-white mb-2">{mockQuestion.title}</h2>
         <div className="text-[#b5bac1] mb-2">{mockQuestion.description}</div>
-        <div className="flex gap-2 mb-4">
+        <div className="flex gap-2 mb-4 flex-wrap">
           {mockQuestion.tags.map((tag, idx) => (
             <span key={idx} className="bg-[#40444b] text-xs px-2 py-1 rounded-md text-[#b5bac1]">{tag}</span>
           ))}
@@ -64,13 +75,16 @@ export default function QuestionDetailPage() {
           <h3 className="text-lg font-semibold text-white mb-2">Answers</h3>
           {answers.map(a => (
             <div key={a.id} className="bg-[#40444b] rounded-lg p-4 mb-3 flex flex-col sm:flex-row sm:items-center justify-between">
-              <div className="text-white mb-2 sm:mb-0">{a.text}</div>
-              <div className="flex items-center gap-2">
+              <div className="text-white mb-2 sm:mb-0 w-full break-words">
+                <div>{a.text}</div>
+              </div>
+              <div className="flex items-center gap-2 mt-2 sm:mt-0">
                 <span className="text-[#b5bac1] text-xs">by {a.user}</span>
                 <button
                   className={`ml-4 px-3 py-1 rounded bg-[#5865f2] text-white font-bold disabled:bg-[#23272a] disabled:text-[#b5bac1]`}
                   onClick={() => handleUpvote(a.id)}
-                  disabled={!!upvoted[a.id]}
+                  disabled={!user || !!upvoted[a.id]}
+                  title={!user ? "Login to upvote" : upvoted[a.id] ? "Already upvoted" : "Upvote"}
                 >
                   ▲ {a.upvotes}
                 </button>
@@ -78,15 +92,23 @@ export default function QuestionDetailPage() {
             </div>
           ))}
         </div>
-        <form onSubmit={handleAnswer} className="flex flex-col gap-2">
-          <textarea
-            placeholder="Your answer..."
-            className="px-4 py-2 rounded bg-[#40444b] text-white placeholder-[#b5bac1] outline-none min-h-[80px]"
-            value={answerText}
-            onChange={e => setAnswerText(e.target.value)}
-          />
-          <button type="submit" className="bg-[#5865f2] text-white py-2 rounded font-semibold hover:bg-[#4752c4] transition self-end">Submit Answer</button>
-        </form>
+        {/* Answer Form */}
+        {user ? (
+          <form onSubmit={handleAnswer} className="flex flex-col gap-2">
+            <div data-color-mode="dark">
+              <MDEditor
+                value={answerText}
+                onChange={(value) => setAnswerText(value || "")}
+                height={100}
+                preview="edit"
+                className="rounded"
+              />
+            </div>
+            <button type="submit" className="bg-[#5865f2] text-white py-2 rounded font-semibold hover:bg-[#4752c4] transition self-end">Submit Answer</button>
+          </form>
+        ) : (
+          <div className="text-[#b5bac1] text-center py-4">Please <button className="text-[#5865f2] underline" onClick={() => router.push("/login")}>login</button> to submit an answer or upvote.</div>
+        )}
       </div>
     </div>
   );
