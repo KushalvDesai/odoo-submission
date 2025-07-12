@@ -96,8 +96,13 @@ const PAGE_SIZE = 3;
 const filterQuestions = (questions: Question[], filter: string, search: string, tagFilter?: string) => {
   let filtered = questions;
   if (filter === "Unanswered") filtered = filtered.filter(q => q.answers === 0);
+  if (filter === "Answered") filtered = filtered.filter(q => q.answers > 0);
   if (search) filtered = filtered.filter(q => q.title.toLowerCase().includes(search.toLowerCase()) || q.description.toLowerCase().includes(search.toLowerCase()));
   if (tagFilter) filtered = filtered.filter(q => q.tags.includes(tagFilter));
+  if (filter === "MostAnswers") filtered = [...filtered].sort((a, b) => b.answers - a.answers);
+  if (filter === "FewestAnswers") filtered = [...filtered].sort((a, b) => a.answers - b.answers);
+  if (filter === "Oldest") filtered = [...filtered]; // Already oldest first in mock data
+  if (filter === "Alphabetical") filtered = [...filtered].sort((a, b) => a.title.localeCompare(b.title));
   return filtered;
 };
 

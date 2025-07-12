@@ -9,6 +9,16 @@ type TopBarProps = {
   setSearch: (s: string) => void;
 };
 
+const sortOptions = [
+  { label: "Newest", value: "Newest" },
+  { label: "Oldest", value: "Oldest" },
+  { label: "Most Answers", value: "MostAnswers" },
+  { label: "Fewest Answers", value: "FewestAnswers" },
+  { label: "Answered", value: "Answered" },
+  { label: "Unanswered", value: "Unanswered" },
+  { label: "A-Z", value: "Alphabetical" },
+];
+
 const TopBar = ({ filter, setFilter, search, setSearch }: TopBarProps) => {
   const router = useRouter();
   return (
@@ -21,11 +31,18 @@ const TopBar = ({ filter, setFilter, search, setSearch }: TopBarProps) => {
           Ask New Question
         </button>
         <div className="flex gap-2 items-center ml-2">
-          <button onClick={() => setFilter("Newest")} className={`bg-[#40444b] text-white px-3 py-1 rounded-md hover:bg-[#5865f2] hover:text-white transition-colors ${filter === "Newest" ? "bg-[#5865f2]" : ""}`}>Newest</button>
-          <button onClick={() => setFilter("Unanswered")} className={`bg-[#40444b] text-white px-3 py-1 rounded-md hover:bg-[#5865f2] hover:text-white transition-colors ${filter === "Unanswered" ? "bg-[#5865f2]" : ""}`}>Unanswered</button>
-          <button className="bg-[#40444b] text-white px-3 py-1 rounded-md flex items-center gap-1 hover:bg-[#5865f2] hover:text-white transition-colors">
-            more <span className="text-xs">▼</span>
-          </button>
+          <div className="relative">
+            <select
+              value={filter}
+              onChange={e => setFilter(e.target.value)}
+              className="bg-[#40444b] text-white px-3 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5865f2] appearance-none pr-6"
+            >
+              {sortOptions.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+            <span className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-xs text-[#b5bac1]">▼</span>
+          </div>
         </div>
       </div>
       <div className="flex items-center bg-[#40444b] rounded-md px-2 py-1 w-full sm:w-auto max-w-md">
