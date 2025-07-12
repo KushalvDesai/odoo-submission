@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { useRouter } from "next/navigation";
 
 type QuestionCardProps = {
   title: string;
@@ -22,6 +23,8 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   createdAt,
   onTagClick 
 }) => {
+  const router = useRouter();
+
   const formatDate = (date?: Date) => {
     if (!date) return '';
     const now = new Date();
@@ -34,8 +37,23 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     return 'Just now';
   };
 
+  const handleCardClick = () => {
+    // Navigate to question detail page (using a mock ID for now)
+    router.push(`/question/1`);
+  };
+
+  const handleTagClick = (e: React.MouseEvent, tag: string) => {
+    e.stopPropagation(); // Prevent card click when clicking tag
+    if (onTagClick) {
+      onTagClick(tag);
+    }
+  };
+
   return (
-    <div className="bg-[#313338] text-white rounded-xl p-5 mb-4 shadow flex flex-col gap-2 relative font-sans transition hover:shadow-lg hover:bg-[#36393f]">
+    <div 
+      className="bg-[#313338] text-white rounded-xl p-5 mb-4 shadow flex flex-col gap-2 relative font-sans transition hover:shadow-lg hover:bg-[#36393f] cursor-pointer"
+      onClick={handleCardClick}
+    >
       <div className="text-lg font-semibold mb-1 line-clamp-2">{title}</div>
       <div className="text-sm text-[#b5bac1] mb-2 line-clamp-2">{description}</div>
       <div className="flex flex-wrap gap-2 mb-2">
@@ -43,7 +61,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           <button
             key={idx}
             className="bg-[#40444b] text-xs px-2 py-1 rounded-md text-[#b5bac1] hover:bg-[#5865f2] hover:text-white transition-colors"
-            onClick={onTagClick ? () => onTagClick(tag) : undefined}
+            onClick={(e) => handleTagClick(e, tag)}
             type="button"
           >
             {tag}

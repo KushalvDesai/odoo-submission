@@ -15,8 +15,9 @@ type Question = {
 type QuestionListProps = {
   filter: string;
   search: string;
-  tagFilter?: string;
-  setTagFilter?: (tag: string) => void;
+  selectedTags?: string[];
+  onTagClick?: (tag: string) => void;
+  onClearTags?: () => void;
 };
 
 const initialQuestions: Question[] = [
@@ -133,12 +134,14 @@ const initialQuestions: Question[] = [
 
 const PAGE_SIZE = 4;
 
-const filterQuestions = (questions: Question[], filter: string, search: string, tagFilter?: string) => {
+const filterQuestions = (questions: Question[], filter: string, search: string, selectedTags?: string[]) => {
   let filtered = questions;
   if (filter === "Unanswered") filtered = filtered.filter(q => q.answers === 0);
   if (filter === "Answered") filtered = filtered.filter(q => q.answers > 0);
   if (search) filtered = filtered.filter(q => q.title.toLowerCase().includes(search.toLowerCase()) || q.description.toLowerCase().includes(search.toLowerCase()));
-  if (tagFilter) filtered = filtered.filter(q => q.tags.includes(tagFilter));
+  if (selectedTags && selectedTags.length > 0) {
+    filtered = filtered.filter(q => selectedTags.every(tag => q.tags.includes(tag)));
+  }
   if (filter === "MostAnswers") filtered = [...filtered].sort((a, b) => b.answers - a.answers);
   if (filter === "FewestAnswers") filtered = [...filtered].sort((a, b) => a.answers - b.answers);
   if (filter === "Oldest") filtered = [...filtered].sort((a, b) => (a.createdAt?.getTime() || 0) - (b.createdAt?.getTime() || 0));
@@ -146,29 +149,40 @@ const filterQuestions = (questions: Question[], filter: string, search: string, 
   return filtered;
 };
 
-const QuestionList = ({ filter, search, tagFilter, setTagFilter }: QuestionListProps) => {
+const QuestionList = ({ filter, search, selectedTags = [], onTagClick, onClearTags }: QuestionListProps) => {
   const [page, setPage] = useState(1);
   const [questions] = useState(initialQuestions);
-  const filtered = filterQuestions(questions, filter, search, tagFilter);
+  const filtered = filterQuestions(questions, filter, search, selectedTags);
   const pageCount = Math.ceil(filtered.length / PAGE_SIZE);
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   // Reset to page 1 when filters change
   React.useEffect(() => {
     setPage(1);
-  }, [filter, search, tagFilter]);
+  }, [filter, search, selectedTags]);
 
   return (
     <div className="w-full flex flex-col gap-2 mt-6">
-      {tagFilter && setTagFilter && (
-        <div className="mb-2 flex items-center gap-2">
-          <span className="text-xs text-[#b5bac1]">Filtering by tag:</span>
-          <span className="bg-[#5865f2] text-white text-xs px-2 py-1 rounded">{tagFilter}</span>
+      {selectedTags.length > 0 && onClearTags && (
+        <div className="mb-2 flex items-center gap-2 flex-wrap">
+          <span className="text-xs text-[#b5bac1]">Filtering by tags:</span>
+          {selectedTags.map((tag, index) => (
+            <span key={index} className="bg-[#5865f2] text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+              {tag}
+              <button
+                className="ml-1 hover:text-[#f04747] transition-colors"
+                onClick={() => onTagClick && onTagClick(tag)}
+                title="Remove tag"
+              >
+                ×
+              </button>
+            </span>
+          ))}
           <button
             className="text-xs text-[#f04747] underline ml-2"
-            onClick={() => setTagFilter("")}
+            onClick={onClearTags}
           >
-            Clear
+            Clear All
           </button>
         </div>
       )}
@@ -181,7 +195,7 @@ const QuestionList = ({ filter, search, tagFilter, setTagFilter }: QuestionListP
       )}
       
       {paged.map((q, idx) => (
-        <QuestionCard key={idx} {...q} onTagClick={setTagFilter} />
+        <QuestionCard key={idx} {...q} onTagClick={onTagClick} />
       ))}
       
       {/* Pagination */}
