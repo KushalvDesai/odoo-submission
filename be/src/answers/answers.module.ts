@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AnswersService } from './answers.service';
 import { AnswersResolver } from './answers.resolver';
@@ -14,7 +14,7 @@ import { QuestionsModule } from '../questions/questions.module';
     ]),
     UsersModule,
     NotificationsModule,
-    QuestionsModule,
+    forwardRef(() => QuestionsModule),
   ],
   providers: [AnswersService, AnswersResolver],
   exports: [AnswersService],
