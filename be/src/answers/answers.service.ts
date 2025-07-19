@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Answer, AnswerDocument } from './schemas/answer.schema';
@@ -13,6 +13,7 @@ export class AnswersService {
   constructor(
     @InjectModel(Answer.name) private answerModel: Model<AnswerDocument>,
     private notificationsService: NotificationsService,
+    @Inject(forwardRef(() => QuestionsService))
     private questionsService: QuestionsService,
     private usersService: UsersService,
   ) {}

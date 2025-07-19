@@ -5,6 +5,7 @@ import { QuestionsResolver } from './questions.resolver';
 import { Question, QuestionSchema } from './schemas/question.schema';
 import { TagsModule } from '../tags/tags.module';
 import { AnswersModule } from '../answers/answers.module';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
@@ -13,8 +14,9 @@ import { AnswersModule } from '../answers/answers.module';
     ]),
     TagsModule,
     forwardRef(() => AnswersModule),
+    UsersModule,
   ],
   providers: [QuestionsService, QuestionsResolver],
   exports: [QuestionsService],
 })
-export class QuestionsModule {} 
+export class QuestionsModule {}   

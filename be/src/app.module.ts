@@ -10,6 +10,7 @@ import { UsersModule } from './users/users.module';
 import { AnswersModule } from './answers/answers.module';
 import { VotesModule } from './votes/votes.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { TagsModule } from './tags/tags.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     AnswersModule,
     VotesModule,
     NotificationsModule,
+    TagsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
