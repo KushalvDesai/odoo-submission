@@ -150,7 +150,6 @@ export default function AskPage() {
                   height={200}
                   preview="edit"
                   className="rounded-lg"
-                  readOnly={loading}
                 />
               </div>
             </div>

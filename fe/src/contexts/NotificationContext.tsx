@@ -20,6 +20,7 @@ type NotificationContextType = {
   unreadCount: number;
   refetchNotifications: () => void;
   // Optionally: markAllRead, markOneRead, etc.
+  createMentionNotification: (mentionedUser: string, questionerName: string, questionId: string) => void;
 };
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -40,11 +41,18 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const notifications: Notification[] = data?.notifications || [];
   const unreadCount = notifications.filter(n => !n.read).length;
 
+  // Dummy implementation, replace with actual logic as needed
+  const createMentionNotification = (mentionedUser: string, questionerName: string, questionId: string) => {
+    // Implement notification creation logic here (e.g., call a mutation or update state)
+    console.warn("createMentionNotification called", { mentionedUser, questionerName, questionId });
+  };
+
   return (
     <NotificationContext.Provider value={{
       notifications,
       unreadCount,
-      refetchNotifications: refetch,
+      refetchNotifications: () => refetch(),
+      createMentionNotification,
     }}>
       {children}
     </NotificationContext.Provider>
