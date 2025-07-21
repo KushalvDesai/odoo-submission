@@ -60,11 +60,20 @@ const TopBar = ({ filter, setFilter, search, setSearch }: TopBarProps) => {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-foreground-tertiary" />
           <input
             type="text"
-            placeholder="Search questions..."
-            className="input pl-10 pr-4 w-full"
+            placeholder={search ? "Fuzzy searching..." : "Search questions..."}
+            className={`input pl-10 pr-4 w-full ${search ? 'border-accent-primary bg-accent-tertiary/10' : ''}`}
             value={search}
             onChange={e => setSearch(e.target.value)}
+            title={search ? "Using fuzzy search - results ranked by relevance" : "Search in title, description, tags, and author"}
           />
+          {search && (
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+              <div className="flex items-center space-x-1 text-xs text-accent-primary">
+                <div className="w-2 h-2 rounded-full bg-accent-primary animate-pulse"></div>
+                <span className="hidden sm:inline">Smart Search</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

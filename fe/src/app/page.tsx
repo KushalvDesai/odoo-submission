@@ -26,7 +26,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background-primary">
       <Header />
-      <TopBar filter={filter} setFilter={setFilter} search={search} setSearch={search} />
+      <TopBar filter={filter} setFilter={setFilter} search={search} setSearch={setSearch} />
       
       <main className="flex-1 flex flex-col items-center overflow-y-auto">
         <div className="w-full max-w-6xl px-4 py-8">
