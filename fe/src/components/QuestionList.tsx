@@ -6,6 +6,7 @@ import QuestionCard from "./QuestionCard";
 import { Filter, X, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useRouter } from "next/navigation";
+import { filterQuestionsWithFuzzySearch } from "../utils/fuzzy-search";
 
 type Question = {
   id: string;
@@ -25,42 +26,7 @@ type QuestionListProps = {
   onClearTags?: () => void;
 };
 
-const PAGE_SIZE = 4;
-
-const filterQuestions = (questions: Question[], filter: string, search: string, selectedTags?: string[]) => {
-  let filtered = questions;
-  
-  // Filter by search term
-  if (search) {
-    filtered = filtered.filter(q => 
-      q.title.toLowerCase().includes(search.toLowerCase()) || 
-      q.desc.toLowerCase().includes(search.toLowerCase())
-    );
-  }
-  
-  // Filter by tags
-  if (selectedTags && selectedTags.length > 0) {
-    filtered = filtered.filter(q => selectedTags.every(tag => q.tags.includes(tag)));
-  }
-  
-  // Sort by filter
-  switch (filter) {
-    case "Newest":
-      filtered = [...filtered].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-      break;
-    case "Oldest":
-      filtered = [...filtered].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-      break;
-    case "Alphabetical":
-      filtered = [...filtered].sort((a, b) => a.title.localeCompare(b.title));
-      break;
-    default:
-      // Default to newest
-      filtered = [...filtered].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }
-  
-  return filtered;
-};
+const PAGE_SIZE = 5;
 
 export default function QuestionList({ filter, search, selectedTags = [], onTagClick, onClearTags }: QuestionListProps) {
   const [page, setPage] = useState(1);
@@ -157,7 +123,7 @@ export default function QuestionList({ filter, search, selectedTags = [], onTagC
   }
 
   const questions: Question[] = data?.questions || [];
-  const filtered = filterQuestions(questions, filter, search, selectedTags);
+  const filtered = filterQuestionsWithFuzzySearch(questions, filter, search, selectedTags);
   const pageCount = Math.ceil(filtered.length / PAGE_SIZE);
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
@@ -204,7 +170,7 @@ export default function QuestionList({ filter, search, selectedTags = [], onTagC
       
       {/* Questions List */}
       <div className="space-y-4">
-        {paged.map((question, index) => {
+        {paged.map((question: Question, index: number) => {
           const stats = questionStats[question.id] || { answers: 0, upvotes: 0, downvotes: 0 };
           return (
             <div key={question.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>

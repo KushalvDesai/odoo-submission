@@ -7,6 +7,7 @@ import { Filter, X, ChevronLeft, ChevronRight, Search, Trash2 } from 'lucide-rea
 import { useAuth } from '../../contexts/AuthContext';
 import Header from "../../components/Header";
 import TopBar from "../../components/TopBar";
+import { filterQuestionsWithFuzzySearch } from "../../utils/fuzzy-search";
 
 type Question = {
   id: string;
@@ -19,41 +20,6 @@ type Question = {
 };
 
 const PAGE_SIZE = 4;
-
-const filterQuestions = (questions: Question[], filter: string, search: string, selectedTags?: string[]) => {
-  let filtered = questions;
-  
-  // Filter by search term
-  if (search) {
-    filtered = filtered.filter(q => 
-      q.title.toLowerCase().includes(search.toLowerCase()) || 
-      q.desc.toLowerCase().includes(search.toLowerCase())
-    );
-  }
-  
-  // Filter by tags
-  if (selectedTags && selectedTags.length > 0) {
-    filtered = filtered.filter(q => selectedTags.every(tag => q.tags.includes(tag)));
-  }
-  
-  // Sort by filter
-  switch (filter) {
-    case "Newest":
-      filtered = [...filtered].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-      break;
-    case "Oldest":
-      filtered = [...filtered].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-      break;
-    case "Alphabetical":
-      filtered = [...filtered].sort((a, b) => a.title.localeCompare(b.title));
-      break;
-    default:
-      // Default to newest
-      filtered = [...filtered].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }
-  
-  return filtered;
-};
 
 export default function AdminPanel() {
   const [page, setPage] = useState(1);
@@ -163,14 +129,14 @@ export default function AdminPanel() {
   }
 
   const questions: Question[] = data?.questions || [];
-  const filtered = filterQuestions(questions, filter, search, selectedTags);
+  const filtered = filterQuestionsWithFuzzySearch(questions, filter, search, selectedTags);
   const pageCount = Math.ceil(filtered.length / PAGE_SIZE);
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <div className="min-h-screen bg-background-primary">
       <Header />
-      <TopBar filter={filter} setFilter={setFilter} search={search} setSearch={search} />
+      <TopBar filter={filter} setFilter={setFilter} search={search} setSearch={setSearch} />
       
       <main className="flex-1 flex flex-col items-center overflow-y-auto">
         <div className="w-full max-w-6xl px-4 py-8">
@@ -225,7 +191,7 @@ export default function AdminPanel() {
               
               {/* Questions List */}
               <div className="space-y-4">
-                {paged.map((question, index) => {
+                {paged.map((question: Question, index: number) => {
                   const stats = questionStats[question.id] || { answers: 0, upvotes: 0, downvotes: 0 };
                   return (
                     <div key={question.id} className="animate-fade-in relative" style={{ animationDelay: `${index * 0.1}s` }}>
