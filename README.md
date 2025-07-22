@@ -29,6 +29,7 @@ StackIt is a comprehensive Q&A platform that enables developers and enthusiasts 
 - 📢 **Real-time Notifications** - Stay updated with instant notifications
 - 🔗 **User Mentions** - Tag users with @mentions in answers
 - 📱 **Responsive Design** - Optimized for all device sizes
+- 🔍 **Smart Searching** - Uses fuzzy searching to find the closest matching posts even with typos or partial queries
 - 🎨 **Modern UI** - Clean, intuitive interface with Tailwind CSS
 
 ## 🛠️ Tech Stack
