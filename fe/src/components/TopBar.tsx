@@ -42,10 +42,16 @@ const TopBar = ({ filter, setFilter, search, setSearch }: TopBarProps) => {
               <select
                 value={filter}
                 onChange={e => setFilter(e.target.value)}
-                className="input pr-8 appearance-none cursor-pointer hover:border-border-secondary transition-colors"
+                className="input pr-8 py-3 px-4 appearance-none cursor-pointer hover:border-border-secondary transition-colors [&>option]:py-3 [&>option]:px-4 [&>option]:bg-background-primary"
               >
                 {sortOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  <option 
+                    key={opt.value} 
+                    value={opt.value}
+                    className="py-3 px-4 bg-background-primary hover:bg-background-tertiary"
+                  >
+                    {opt.label}
+                  </option>
                 ))}
               </select>
               <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">

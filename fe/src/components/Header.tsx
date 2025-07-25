@@ -47,7 +47,7 @@ const ProfileDropdown = ({ onLogout }: { onLogout: () => void }) => {
 };
 
 const Header = () => {
-  const { unreadCount, markAllRead } = useNotification();
+  const { unreadCount } = useNotification();
   const { user, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
