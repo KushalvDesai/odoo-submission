@@ -72,7 +72,23 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ open, ancho
               n.read ? "bg-transparent" : "bg-accent-tertiary"
             }`}
             onClick={() => {
-              if (n.meta?.link) router.push(n.meta.link);
+              try {
+                // Parse meta data to get question/answer IDs
+                const meta = typeof n.meta === 'string' ? JSON.parse(n.meta) : n.meta;
+                if (meta?.questionId) {
+                  // Navigate to the question page
+                  router.push(`/question/${meta.questionId}`);
+                } else if (n.meta?.link) {
+                  // Fallback to direct link if available
+                  router.push(n.meta.link);
+                }
+              } catch (error) {
+                console.error('Error parsing notification meta:', error);
+                // Fallback: if meta has direct link, use it
+                if (n.meta?.link) {
+                  router.push(n.meta.link);
+                }
+              }
               onClose();
             }}
           >
