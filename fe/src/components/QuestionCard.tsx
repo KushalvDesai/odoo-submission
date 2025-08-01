@@ -3,6 +3,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { MessageSquare, ThumbsUp, ThumbsDown, Clock, User, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import SafeHtmlRenderer from './SafeHtmlRenderer';
 
 type QuestionCardProps = {
   id: string;
@@ -121,9 +122,10 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       </div>
 
       {/* Description */}
-      <p className="text-sm text-foreground-secondary mb-4 line-clamp-2">
-        {description}
-      </p>
+      <SafeHtmlRenderer 
+        html={description}
+        className="text-sm text-foreground-secondary mb-4 line-clamp-2"
+      />
 
       {/* Tags */}
       <div className="flex flex-wrap gap-2 mb-4">

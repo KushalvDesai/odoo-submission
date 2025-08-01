@@ -561,3 +561,163 @@ p {
     color: black !important;
   }
 }
+
+/* HTML Content Rendering Styles */
+.safe-html-content {
+  /* Basic text styling */
+  line-height: 1.6;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.safe-html-content p {
+  margin: 0 0 1rem 0;
+}
+
+.safe-html-content p:last-child {
+  margin-bottom: 0;
+}
+
+.safe-html-content h1,
+.safe-html-content h2,
+.safe-html-content h3,
+.safe-html-content h4,
+.safe-html-content h5,
+.safe-html-content h6 {
+  margin: 1.5rem 0 0.75rem 0;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.safe-html-content h1:first-child,
+.safe-html-content h2:first-child,
+.safe-html-content h3:first-child,
+.safe-html-content h4:first-child,
+.safe-html-content h5:first-child,
+.safe-html-content h6:first-child {
+  margin-top: 0;
+}
+
+.safe-html-content ul,
+.safe-html-content ol {
+  margin: 0 0 1rem 0;
+  padding-left: 1.5rem;
+}
+
+.safe-html-content li {
+  margin: 0.25rem 0;
+}
+
+.safe-html-content blockquote {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  border-left: 4px solid var(--accent-primary);
+  background: var(--background-tertiary);
+  border-radius: 0.25rem;
+  font-style: italic;
+}
+
+.safe-html-content code {
+  background: var(--background-tertiary);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.875em;
+}
+
+.safe-html-content pre {
+  background: var(--background-tertiary);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  border: 1px solid var(--border-primary);
+}
+
+.safe-html-content pre code {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+.safe-html-content a {
+  color: var(--accent-primary);
+  text-decoration: underline;
+}
+
+.safe-html-content a:hover {
+  color: var(--accent-secondary);
+}
+
+.safe-html-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.safe-html-content th,
+.safe-html-content td {
+  border: 1px solid var(--border-primary);
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.safe-html-content th {
+  background: var(--background-tertiary);
+  font-weight: 600;
+}
+
+.safe-html-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+
+/* Dark theme adjustments for HTML content */
+[data-theme="dark"] .safe-html-content blockquote {
+  background: var(--background-secondary);
+}
+
+[data-theme="dark"] .safe-html-content code {
+  background: var(--background-secondary);
+}
+
+[data-theme="dark"] .safe-html-content pre {
+  background: var(--background-secondary);
+  border-color: var(--border-secondary);
+}
+
+/* Quill-specific list styling */
+.safe-html-content li[data-list="bullet"] {
+  list-style-type: disc;
+  margin-left: 1.5rem;
+}
+
+.safe-html-content li[data-list="ordered"] {
+  list-style-type: decimal;
+  margin-left: 1.5rem;
+}
+
+.safe-html-content li[data-list="bullet"]::before,
+.safe-html-content li[data-list="ordered"]::before {
+  display: none;
+}
+
+/* Handle Quill's span elements inside list items */
+.safe-html-content li span[contenteditable="false"] {
+  display: none;
+}
+
+/* Ensure proper list display */
+.safe-html-content ul,
+.safe-html-content ol {
+  list-style-position: outside;
+  padding-left: 1.5rem;
+}
+
+.safe-html-content ul li,
+.safe-html-content ol li {
+  display: list-item;
+  margin: 0.25rem 0;
+}

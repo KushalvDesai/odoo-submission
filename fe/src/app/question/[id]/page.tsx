@@ -7,17 +7,13 @@ import { useNotification } from "../../../contexts/NotificationContext";
 import { useAuth } from "../../../contexts/AuthContext";
 import { parseMentions, validateMentions } from "../../../utils/mentions";
 import Header from "../../../components/Header";
-import dynamic from "next/dynamic";
 import { ArrowUp, ArrowDown, MessageSquare, Clock, User, CheckCircle, Send, AlertCircle } from 'lucide-react';
-import "@uiw/react-md-editor/markdown-editor.css";
-import "@uiw/react-markdown-preview/markdown.css";
-import { useQuery as useApolloQuery } from "@apollo/client";
-
-const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
+import QuillEditor from "../../../components/QuillEditor";
+import SafeHtmlRenderer from "../../../components/SafeHtmlRenderer";
 
 // Helper component for answer voting stats
 function AnswerVoteStats({ answerId, onRefetch }: { answerId: string; onRefetch?: (refetchFn: () => void) => void }) {
-  const { data, loading, refetch } = useApolloQuery(GET_VOTE_STATS, { 
+  const { data, loading, refetch } = useQuery(GET_VOTE_STATS, { 
     variables: { answerId },
     fetchPolicy: 'cache-and-network'
   });
@@ -301,10 +297,22 @@ export default function QuestionDetailPage() {
             {/* Question */}
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-foreground-primary mb-4">{question.title}</h1>
-              <div className="text-foreground-secondary mb-6 leading-relaxed whitespace-pre-wrap">{question.desc}</div>
+                             <SafeHtmlRenderer 
+                 html={question.desc}
+                 className="text-foreground-secondary mb-6 leading-relaxed"
+               />
               <div className="flex gap-2 mb-6 flex-wrap">
                 {question.tags.map((tag: string, idx: number) => (
-                  <span key={idx} className="badge badge-primary">{tag}</span>
+                  <button
+                    key={idx}
+                    className="badge badge-primary hover:bg-accent-primary hover:text-white transition-colors cursor-pointer"
+                    onClick={() => {
+                      // Navigate to home page with this tag selected
+                      router.push(`/?tag=${encodeURIComponent(tag)}`);
+                    }}
+                  >
+                    {tag}
+                  </button>
                 ))}
               </div>
               <div className="flex items-center justify-between text-sm text-foreground-tertiary">
@@ -380,15 +388,13 @@ export default function QuestionDetailPage() {
                       <div className="flex-1">
                         {editingAnswerId === answer.id ? (
                           <div className="mb-4">
-                            <div data-color-mode="dark">
-                              <MDEditor
-                                value={editingAnswerText}
-                                onChange={(value) => setEditingAnswerText(value || "")}
-                                height={200}
-                                preview="edit"
-                                className="rounded-lg"
-                              />
-                            </div>
+                            <QuillEditor
+                              value={editingAnswerText}
+                              onChange={setEditingAnswerText}
+                              placeholder="Edit your answer..."
+                              minHeight={150}
+                              maxHeight={400}
+                            />
                             {/* Edit buttons */}
                             <div className="flex gap-2 mt-4">
                               <button
@@ -407,9 +413,10 @@ export default function QuestionDetailPage() {
                             </div>
                           </div>
                         ) : (
-                          <div className="text-foreground-primary mb-4 leading-relaxed whitespace-pre-wrap">
-                            {answer.content}
-                          </div>
+                                                     <SafeHtmlRenderer 
+                             html={answer.content}
+                             className="text-foreground-primary mb-4 leading-relaxed"
+                           />
                         )}
                         
                         {/* Accepted badge or mark button */}
@@ -481,15 +488,13 @@ export default function QuestionDetailPage() {
                       <span>Tip: Use @username to mention other users (e.g., @alice, @bob). You can also use markdown formatting.</span>
                     </div>
                   </div>
-                  <div data-color-mode="dark">
-                    <MDEditor
-                      value={answerText}
-                      onChange={(value) => setAnswerText(value || "")}
-                      height={200}
-                      preview="edit"
-                      className="rounded-lg"
-                    />
-                  </div>
+                  <QuillEditor
+                    value={answerText}
+                    onChange={setAnswerText}
+                    placeholder="Write your answer..."
+                    minHeight={150}
+                    maxHeight={400}
+                  />
                   <button 
                     type="submit" 
                     className="btn btn-primary hover-scale flex items-center space-x-2"
