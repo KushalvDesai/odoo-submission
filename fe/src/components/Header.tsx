@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useNotification } from "../contexts/NotificationContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useRouter } from "next/navigation";
@@ -33,8 +34,26 @@ const NotificationIcon = ({ type }: { type?: string }) => {
 };
 
 const ProfileDropdown = ({ onLogout }: { onLogout: () => void }) => {
-  return (
-    <div className="absolute right-0 mt-2 w-48 card z-50 animate-scale-in">
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [style, setStyle] = useState<React.CSSProperties>({});
+
+  useEffect(() => {
+    // Position dropdown below profile button
+    const anchor = document.querySelector("#profile-anchor");
+    if (anchor) {
+      const rect = anchor.getBoundingClientRect();
+      setStyle({
+        position: "absolute",
+        top: rect.bottom + 8 + window.scrollY,
+        left: rect.right - 192 + window.scrollX, // 192 = dropdown width
+        zIndex: 9999,
+        minWidth: 192,
+      });
+    }
+  }, []);
+
+  return createPortal(
+    <div ref={dropdownRef} style={style} className="card animate-scale-in">
       <button 
         onClick={onLogout} 
         className="w-full text-left px-4 py-3 text-foreground-primary hover:bg-background-tertiary rounded-lg transition-colors flex items-center space-x-2"
@@ -42,7 +61,8 @@ const ProfileDropdown = ({ onLogout }: { onLogout: () => void }) => {
         <LogOut className="w-4 h-4" />
         <span>Logout</span>
       </button>
-    </div>
+    </div>,
+    document.body
   );
 };
 
@@ -56,9 +76,19 @@ const Header = () => {
 
   const handleBellClick = () => {
     setDropdownOpen(open => !open);
+    setProfileOpen(false);
   };
 
-  const handleProfileClick = () => setProfileOpen(open => !open);
+  const handleProfileClick = () => {
+    setProfileOpen(open => !open);
+    setDropdownOpen(false);
+  };
+
+  const handleLogout = () => {
+    setDropdownOpen(false);
+    setProfileOpen(false);
+    logout();
+  };
 
   return (
     <header className="w-full flex items-center justify-between glass border-b border-border-primary px-4 sm:px-8 py-4 shadow-md backdrop-blur-md">
@@ -97,6 +127,7 @@ const Header = () => {
             <NotificationDropdown open={dropdownOpen} anchorRef={bellRef} onClose={() => setDropdownOpen(false)} />
             <div className="relative">
               <button 
+                id="profile-anchor"
                 onClick={handleProfileClick} 
                 className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-background-secondary border border-border-primary hover:border-border-secondary transition-all duration-300 hover-lift"
               >
@@ -107,7 +138,7 @@ const Header = () => {
                   {user.email.split("@")[0]}
                 </span>
               </button>
-              {profileOpen && <ProfileDropdown onLogout={logout} />}
+              {profileOpen && <ProfileDropdown onLogout={handleLogout} />}
             </div>
           </>
         )}

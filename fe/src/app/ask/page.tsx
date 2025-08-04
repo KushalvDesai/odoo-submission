@@ -7,12 +7,8 @@ import { CREATE_QUESTION, GET_QUESTIONS } from "../../lib/graphql-queries";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNotification } from "../../contexts/NotificationContext";
 import { parseMentions, validateMentions } from "../../utils/mentions";
-import dynamic from "next/dynamic";
 import { HelpCircle, Tag, AlertCircle, Send } from 'lucide-react';
-import "@uiw/react-md-editor/markdown-editor.css";
-import "@uiw/react-markdown-preview/markdown.css";
-
-const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
+import QuillEditor from "../../components/QuillEditor";
 
 export default function AskPage() {
   const [title, setTitle] = useState("");
@@ -143,15 +139,11 @@ export default function AskPage() {
                   <span>Tip: Use @username to mention other users (e.g., @alice, @bob)</span>
                 </div>
               </div>
-              <div data-color-mode="dark">
-                <MDEditor
-                  value={description}
-                  onChange={(value) => setDescription(value || "")}
-                  height={200}
-                  preview="edit"
-                  className="rounded-lg"
-                />
-              </div>
+              <QuillEditor
+                value={description}
+                onChange={setDescription}
+                placeholder="Describe your question..."
+              />
             </div>
 
             {/* Tags */}

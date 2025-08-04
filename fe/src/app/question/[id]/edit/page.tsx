@@ -6,9 +6,7 @@ import { GET_QUESTION, UPDATE_QUESTION } from "../../../../lib/graphql-queries";
 import { useAuth } from "../../../../contexts/AuthContext";
 import Header from "../../../../components/Header";
 import { ArrowLeft, Save, AlertCircle } from 'lucide-react';
-import dynamic from "next/dynamic";
-
-const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
+import QuillEditor from "../../../../components/QuillEditor";
 
 export default function EditQuestionPage() {
   const [title, setTitle] = useState("");
@@ -182,15 +180,13 @@ export default function EditQuestionPage() {
                 <label htmlFor="description" className="block text-sm font-medium text-foreground-primary mb-2">
                   Description
                 </label>
-                <div data-color-mode="dark">
-                  <MDEditor
-                    value={description}
-                    onChange={(value) => setDescription(value || "")}
-                    height={300}
-                    preview="edit"
-                    className="rounded-lg"
-                  />
-                </div>
+                <QuillEditor
+                  value={description}
+                  onChange={setDescription}
+                  placeholder="Describe your question..."
+                  minHeight={200}
+                  maxHeight={500}
+                />
               </div>
 
               {/* Tags */}

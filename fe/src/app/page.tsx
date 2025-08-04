@@ -1,13 +1,23 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Header from "../components/Header";
 import TopBar from "../components/TopBar";
 import QuestionList from "../components/QuestionList";
 
 export default function Home() {
+  const searchParams = useSearchParams();
   const [filter, setFilter] = useState("Newest");
   const [search, setSearch] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+  // Handle tag parameter from URL
+  useEffect(() => {
+    const tagParam = searchParams.get('tag');
+    if (tagParam) {
+      setSelectedTags([tagParam]);
+    }
+  }, [searchParams]);
 
   const handleTagClick = (tag: string) => {
     setSelectedTags(prev => {
