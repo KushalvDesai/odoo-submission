@@ -280,6 +280,30 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Owner**: [KushalvDesai](https://github.com/KushalvDesai)
 - **Current Branch**: Shrey-BE
 
+## 📈 Project Statistics
+
+<div align="center">
+
+![Contributor Stats](https://contrib.rocks/image?repo=KushalvDesai/stackit-1602)
+
+### **StackIt Repository Activity**
+<img src="https://github-readme-stats.vercel.app/api/pin/?username=KushalvDesai&repo=stackit-1602&theme=tokyonight&hide_border=true&show_owner=true" alt="StackIt Repository" />
+
+### **Repository Analytics**
+![GitHub Repo Size](https://img.shields.io/github/repo-size/KushalvDesai/stackit-1602?style=flat-square&color=blue)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/KushalvDesai/stackit-1602?style=flat-square&color=green)
+![GitHub last commit](https://img.shields.io/github/last-commit/KushalvDesai/stackit-1602?style=flat-square&color=orange)
+![GitHub issues](https://img.shields.io/github/issues/KushalvDesai/stackit-1602?style=flat-square&color=red)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/KushalvDesai/stackit-1602?style=flat-square&color=yellow)
+![GitHub contributors](https://img.shields.io/github/contributors/KushalvDesai/stackit-1602?style=flat-square&color=purple)
+![GitHub forks](https://img.shields.io/github/forks/KushalvDesai/stackit-1602?style=flat-square&color=cyan)
+![GitHub stars](https://img.shields.io/github/stars/KushalvDesai/stackit-1602?style=flat-square&color=gold)
+
+### **Language Distribution in StackIt**
+<img src="https://github-readme-stats.vercel.app/api/top-langs/?username=KushalvDesai&repo=stackit-1602&layout=compact&theme=tokyonight&hide_border=true" alt="StackIt Languages" />
+
+</div>
+
 ## 🙏 Acknowledgments
 
 - Inspired by Stack Overflow's community-driven approach
